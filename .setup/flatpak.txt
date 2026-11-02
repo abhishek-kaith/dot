@@ -1,0 +1,5 @@
+# Flathub apps, installed per-user. Only things pacman doesn't do better.
+
+com.github.tchx84.Flatseal    # manage Flatpak permissions
+it.mijorus.gearlever          # AppImages: menu entries + updates
+# app.zen_browser.zen         # Zen browser, if you want it

@@ -1,0 +1,47 @@
+# Identity is NOT stored here (public repo). Set it once per machine:
+#   git config --file ~/.config/git/local user.name  "Your Name"
+#   git config --file ~/.config/git/local user.email "you@example.com"
+[include]
+	path = local
+
+[init]
+	defaultBranch = main
+[push]
+	autoSetupRemote = true
+	followTags = true
+[pull]
+	rebase = true
+[rebase]
+	autoStash = true
+	autosquash = true
+	updateRefs = true
+[fetch]
+	prune = true
+	pruneTags = true
+[merge]
+	conflictstyle = zdiff3
+[rerere]
+	enabled = true
+[diff]
+	algorithm = histogram
+	colorMoved = default
+	mnemonicPrefix = true
+	renames = true
+[branch]
+	sort = -committerdate
+[tag]
+	sort = version:refname
+[column]
+	ui = auto
+[core]
+	editor = nvim
+	pager = delta
+[interactive]
+	diffFilter = delta --color-only
+[delta]
+	navigate = true
+	line-numbers = true
+[commit]
+	verbose = true
+[help]
+	autocorrect = prompt

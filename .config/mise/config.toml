@@ -1,0 +1,12 @@
+# Global dev tools (mise up = update, mise prune = clean old versions).
+# Projects pin their own versions in a mise.toml next to the code.
+# Python: `uv python install` / `uv venv` (uv manages Python itself).
+
+[tools]
+node = "lts"
+pnpm = "latest"
+uv = "latest"
+claude = "latest"
+
+[settings]
+auto_install = true

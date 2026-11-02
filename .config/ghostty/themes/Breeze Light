@@ -1,0 +1,31 @@
+# Breeze Light — the light half of `theme = light:Breeze Light,dark:Breeze` in
+# ../config.ghostty. Ghostty ships only a dark Breeze; this is built from Plasma's own
+# BreezeLight.colors so the terminal matches the desktop in light mode.
+
+# Plasma's [Colors:View] text on Breeze's off-white; selection in Plasma blue.
+background = #fcfcfc
+foreground = #232629
+cursor-color = #232629
+cursor-text = #fcfcfc
+selection-background = #3daee9
+selection-foreground = #ffffff
+
+# Normal: Breeze's semantic colours (negative, positive, neutral, link, visited).
+palette = 0=#232629
+palette = 1=#da4453
+palette = 2=#27ae60
+palette = 3=#f67400
+palette = 4=#2980b9
+palette = 5=#9b59b6
+palette = 6=#16a085
+palette = 7=#bdc3c7
+# Bright: Plasma's darker shades of the same, so bold text keeps its contrast
+# on white. 8 is Plasma's inactive-text grey — zsh autosuggestions, comments.
+palette = 8=#707d8a
+palette = 9=#b03745
+palette = 10=#176839
+palette = 11=#c65c00
+palette = 12=#1d99f3
+palette = 13=#8e44ad
+palette = 14=#1abc9c
+palette = 15=#fcfcfc

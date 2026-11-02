@@ -1,0 +1,47 @@
+# Installed on every machine, whatever the desktop.
+# One package per word; everything after # is ignored.
+# Not listed because archinstall already installs them: base, linux,
+# linux-firmware, amd-ucode, networkmanager, pipewire (+ pulse/alsa/jack),
+# wireplumber, sudo. mesa comes with the desktop.
+
+# ── shell ──
+zsh zsh-completions zsh-autosuggestions zsh-syntax-highlighting starship
+tmux neovim tree-sitter-cli mise
+
+# ── git + dev ──
+git github-cli git-delta lazygit base-devel openssh sshfs
+
+# ── modern cli ──
+ripgrep fd fzf zoxide bat eza dust btop jq go-yq xh tealdeer
+man-db man-pages
+unzip zip 7zip unrar rsync wget wl-clipboard
+powertop                      # measure battery draw: sudo powertop
+
+# ── apps ──
+ghostty                       # terminal (GPU)
+firefox                       # daily browser
+chromium                      # second browser, for testing sites
+keepassxc                     # passwords, TOTP, SSH keys
+mpv                           # video (GPU)
+libreoffice-fresh             # docx / xlsx / pptx
+
+# ── graphics + media ──
+vulkan-radeon                 # AMD Vulkan; without it Vulkan apps wake the NVIDIA GPU
+gst-libav gst-plugins-good    # codecs for GStreamer apps
+noise-suppression-for-voice   # mic denoise (~/.config/pipewire/pipewire.conf.d)
+
+# ── system ──
+power-profiles-daemon         # power modes; KDE + GNOME switchers use it
+fwupd                         # firmware updates: fwupdmgr update
+ufw                           # firewall
+reflector pacman-contrib      # mirror refresh + paccache
+zram-generator
+bluez bluez-utils
+cups                          # printing
+flatpak
+fuse2                         # AppImage support
+xdg-desktop-portal-gtk        # GTK apps and Flatpaks: file dialogs, cursor theme
+
+# ── fonts ──
+noto-fonts noto-fonts-cjk noto-fonts-emoji
+ttf-iosevka-nerd ttf-jetbrains-mono-nerd

@@ -1,0 +1,53 @@
+# Ghostty: GPU-drawn terminal. tmux does tabs/splits/sessions, so Ghostty's
+# own tab/split keys are unbound below and reach tmux and nvim instead.
+# Reload: Ctrl+Shift+,   Check: ghostty +validate-config
+
+# ── look ──
+font-family = Iosevka Nerd Font
+font-size = 11
+# Follows the desktop's light/dark setting live (KDE and GNOME, via the portal).
+# "Breeze Light" is in ./themes/; "Breeze" ships with Ghostty.
+theme = light:Breeze Light,dark:Breeze
+background-opacity = 0.93
+background-blur = true
+window-padding-x = 6
+window-padding-y = 4
+window-padding-balance = true
+cursor-style-blink = false
+mouse-hide-while-typing = true
+
+# One process serves every window: new windows open instantly.
+gtk-single-instance = true
+# tmux keeps the session, so closing a window loses nothing.
+confirm-close-surface = false
+# Over ssh: copy Ghostty's terminfo to the remote (fallback xterm-256color).
+shell-integration-features = ssh-terminfo,ssh-env
+
+# ── keys: leave these to tmux / nvim / TUI apps ──
+keybind = alt+digit_1=unbind
+keybind = alt+digit_2=unbind
+keybind = alt+digit_3=unbind
+keybind = alt+digit_4=unbind
+keybind = alt+digit_5=unbind
+keybind = alt+digit_6=unbind
+keybind = alt+digit_7=unbind
+keybind = alt+digit_8=unbind
+keybind = alt+digit_9=unbind
+keybind = ctrl+tab=unbind
+keybind = ctrl+shift+tab=unbind
+keybind = ctrl+page_up=unbind
+keybind = ctrl+page_down=unbind
+keybind = ctrl+shift+arrow_left=unbind
+keybind = ctrl+shift+arrow_right=unbind
+keybind = ctrl+shift+t=unbind
+keybind = ctrl+shift+w=unbind
+keybind = ctrl+shift+e=unbind
+keybind = ctrl+shift+o=unbind
+keybind = ctrl+shift+enter=unbind
+keybind = ctrl+alt+arrow_up=unbind
+keybind = ctrl+alt+arrow_down=unbind
+keybind = ctrl+alt+arrow_left=unbind
+keybind = ctrl+alt+arrow_right=unbind
+keybind = ctrl+enter=unbind
+# Kept: Ctrl+Shift+C/V copy/paste, Ctrl+= / Ctrl+- / Ctrl+0 font size,
+# Ctrl+Shift+F search, Ctrl+Shift+, reload.

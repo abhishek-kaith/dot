@@ -1,0 +1,5 @@
+# Global gitignore (git reads ~/.config/git/ignore by default)
+*.swp
+*~
+.direnv/
+.env.local
