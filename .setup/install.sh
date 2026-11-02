@@ -18,14 +18,21 @@ rebuild=0
 say() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
 list() { sed 's/#.*//' "$@" | tr -s ' \t' '\n' | grep -v '^$'; }
 
-# Add a kernel option to /etc/kernel/cmdline (UKI); the image is rebuilt at the end.
+# Add a kernel option to /etc/kernel/cmdline, which mkinitcpio bakes into the
+# unified kernel image; the image is rebuilt once at the end. Safe to repeat:
+# an option already present is skipped. The untouched original is kept as
+# /etc/kernel/cmdline.orig. Undo: remove the word, then `sudo mkinitcpio -P`.
 kernel_param() {
     if [ ! -f /etc/kernel/cmdline ]; then
         echo "!! no /etc/kernel/cmdline: add '$1' to your boot entry by hand"
-    elif ! grep -qw -- "$1" /etc/kernel/cmdline; then
-        sudo sed -i "s|\$| $1|" /etc/kernel/cmdline
-        rebuild=1
+        return 0
     fi
+    grep -qw -- "$1" /etc/kernel/cmdline && return 0
+    [ -f /etc/kernel/cmdline.orig ] || sudo cp /etc/kernel/cmdline /etc/kernel/cmdline.orig
+    sudo sed -i "1s|\$| $1|" /etc/kernel/cmdline
+    echo "kernel option added: $1"
+    echo "  now: $(cat /etc/kernel/cmdline)"
+    rebuild=1
 }
 
 # Let TRIM through LUKS2, stored in the header (Arch wiki: dm-crypt/Specialties).
@@ -71,7 +78,7 @@ say "services"
 sudo systemctl enable --now bluetooth.service cups.socket fstrim.timer paccache.timer reflector.timer
 # Keep a login screen that is already set up; only enable one on a fresh install.
 [ -e /etc/systemd/system/display-manager.service ] || sudo systemctl enable "$dm"
-systemctl --user enable --now ssh-agent.socket
+systemctl --user enable --now ssh-agent.socket podman.socket
 
 say "firewall (deny incoming; allow KDE Connect / GSConnect)"
 sudo ufw default deny incoming >/dev/null

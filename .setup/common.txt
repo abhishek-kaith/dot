@@ -17,6 +17,20 @@ man-db man-pages
 unzip zip 7zip unrar rsync wget wl-clipboard
 powertop                      # measure battery draw: sudo powertop
 
+# ── network + dns ──
+bind                          # dig, host, nslookup
+doggo                         # modern dig (DoH/DoT aware)
+mtr gping                     # live traceroute / ping graph
+nmap openbsd-netcat           # port scan / nc
+iperf3 tcpdump ethtool        # bandwidth test / packet capture / link info
+bandwhich                     # live per-process bandwidth
+whois wireguard-tools
+
+# ── containers (rootless podman; `docker` works too) ──
+podman podman-docker          # podman + a `docker` command that calls it
+docker-compose                # compose; talks to podman.socket (DOCKER_HOST)
+lazydocker dive               # TUI for containers / inspect image layers
+
 # ── apps ──
 ghostty                       # terminal (GPU)
 firefox                       # daily browser

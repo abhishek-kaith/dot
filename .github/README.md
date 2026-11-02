@@ -6,18 +6,18 @@ Machines:
 
 | Hostname | Laptop | Notes |
 |---|---|---|
-| `tufa15` | ASUS TUF Gaming A15 (FA506NCG): Ryzen 7 7445HS + Radeon 740M, RTX 3050 Laptop | hybrid graphics |
-| `t14amd` | Lenovo ThinkPad T14 Gen 1 AMD (Ryzen 4000) | AMD only |
+| `tuf-a15` | ASUS TUF Gaming A15 (FA506NCG): Ryzen 7 7445HS + Radeon 740M, RTX 3050 Laptop | hybrid graphics |
+| `t14-amd` | Lenovo ThinkPad T14 Gen 1 AMD (Ryzen 4000) | AMD only |
 
 ---
 
 ## Contents
 
 - [Fresh install](#fresh-install)
-- [What gets installed](#what-gets-installed)
+- [What gets installed](#what-gets-installed) · [Containers](#containers-rootless-podman)
 - [Daily use](#daily-use)
 - [Layout](#layout)
-- [Per-machine notes](#per-machine-notes)
+- [Per-machine notes](#per-machine-notes) · [Kernel options](#kernel-options)
 - [Theming: Qt, GTK, Flatpak, Electron, AppImage](#theming)
 - [Troubleshooting](#troubleshooting)
 
@@ -38,7 +38,7 @@ Boot the Arch ISO and run `archinstall`:
 | Audio | PipeWire |
 | Network | NetworkManager |
 | Swap | zram |
-| Hostname | `tufa15` or `t14amd`: picks the machine script |
+| Hostname | `tuf-a15` or `t14-amd`: picks the machine script |
 
 ### 2. Bootstrap
 
@@ -111,6 +111,21 @@ The rule: the desktop's own app for files, images, PDFs and screenshots (it matc
 
 `zsh` + `starship`, `tmux`, `neovim`, `mise`, `git` + `delta` + `lazygit`, `gh`, `ripgrep`, `fd`, `fzf`, `zoxide`, `bat`, `eza`, `dust`, `btop`, `jq`, `yq`, `xh`, `tldr` (tealdeer), `powertop`.
 
+**Network + DNS:** `dig`/`host` (bind), `doggo` (modern dig, DoH/DoT), `mtr` (live traceroute), `gping` (ping graph), `nmap`, `nc` (openbsd-netcat), `iperf3`, `tcpdump`, `ethtool`, `bandwhich` (per-process bandwidth), `whois`, `wg` (wireguard-tools).
+
+### Containers: rootless Podman
+
+`podman` runs containers as your user (no daemon, no root). `podman-docker` adds a `docker` command that calls it, and `podman.socket` (user service) provides the Docker API, with `DOCKER_HOST` pointing at it, so `docker-compose`, `lazydocker` and testcontainers work unchanged.
+
+```sh
+docker run --rm -it alpine sh          # = podman run …
+docker-compose up -d                   # uses podman.socket
+lazydocker                             # TUI
+dive <image>                           # inspect image layers
+```
+
+Short image names resolve on Docker Hub ([`~/.config/containers/registries.conf`](../.config/containers/registries.conf)). Rootless needs `/etc/subuid` + `/etc/subgid` entries for your user; `useradd` creates them, so a fresh archinstall user already has them.
+
 ### Dev tools: mise
 
 Global tools are in [`~/.config/mise/config.toml`](../.config/mise/config.toml): `node` (LTS), `pnpm`, `uv`, `claude`. Projects pin their own versions in a `mise.toml`:
@@ -130,7 +145,7 @@ Rule of thumb: **pacman** for the system and CLI tools the shell needs, **mise**
 
 ### System setup done by `install.sh`
 
-- **Services:** bluetooth, cups (printing), `fstrim.timer` (SSD TRIM), `paccache.timer` (keeps 3 old package versions for downgrades), `reflector.timer` (mirrors), `ssh-agent.socket` (user).
+- **Services:** bluetooth, cups (printing), `fstrim.timer` (SSD TRIM), `paccache.timer` (keeps 3 old package versions for downgrades), `reflector.timer` (mirrors), `ssh-agent.socket` + `podman.socket` (user).
 - **Firewall:** `ufw`, deny incoming; KDE Connect / GSConnect ports `1714–1764` TCP+UDP open.
 - **zram:** Arch wiki tuning for in-memory swap (`swappiness=180`, `page-cluster=0`, watermarks).
 - **TRIM through LUKS2:** `cryptsetup --allow-discards --persistent refresh`, stored in the disk header (no kernel option).
@@ -184,7 +199,7 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
   bootstrap.sh                         clone + checkout + install (fresh machine)
   install.sh                           ./install.sh kde|gnome
   common.txt kde.txt gnome.txt flatpak.txt
-  tufa15.sh t14amd.sh                  per-machine fixes (named after the hostname)
+  tuf-a15.sh t14-amd.sh                  per-machine fixes (named after the hostname)
 ~/.zshenv                              every zsh: ZDOTDIR, PATH, EDITOR. Silent and tiny
 ~/.config/zsh/.zshrc                   interactive zsh
 ~/.config/environment.d/10-env.conf    desktop session env: PATH, EDITOR, SSH_AUTH_SOCK
@@ -195,6 +210,7 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 ~/.config/starship.toml
 ~/.config/mise/config.toml
 ~/.config/pipewire/pipewire.conf.d/99-mic-denoise.conf
+~/.config/containers/registries.conf   podman: short names → docker.io
 ~/.local/bin/tmux-sessionizer
 ```
 
@@ -210,11 +226,11 @@ Shell profiles only reach terminals. KeePassXC, the editor launched from the men
 
 ## Per-machine notes
 
-### `tufa15`: ASUS TUF Gaming A15
+### `tuf-a15`: ASUS TUF Gaming A15
 
 Hybrid graphics: the laptop panel and USB-C ports run on the AMD iGPU; **HDMI is wired to the NVIDIA GPU**.
 
-What [`tufa15.sh`](../.setup/tufa15.sh) does:
+What [`tuf-a15.sh`](../.setup/tuf-a15.sh) does:
 
 | Change | Why |
 |---|---|
@@ -252,14 +268,14 @@ A CUDA process (including an idle Jupyter kernel) keeps the GPU awake: close it 
 
 **ASUS tools:** not needed. Power modes go through power-profiles-daemon, charge limit through Plasma, keyboard backlight through KDE. `asusctl` (in the Arch repos) is only for hand-tuning power limits (`nv_dynamic_boost`, PPT). If you add it, leave mode switching to power-profiles-daemon.
 
-### `t14amd`: ThinkPad T14 Gen 1 AMD
+### `t14-amd`: ThinkPad T14 Gen 1 AMD
 
 **BIOS first:**
 - Config > Power > Sleep State = **Linux** (real S3 sleep; s2idle drains more).
 - **Never enroll your own Secure Boot keys**: per the Arch wiki this bricks the board.
 - Firmware: `fwupdmgr update` (BIOS + fingerprint reader via LVFS). The wiki notes BIOS 1.30 caused heavy drain in suspend; read the release notes before updating.
 
-What [`t14amd.sh`](../.setup/t14amd.sh) does: `fprintd` (fingerprint), `alsa-utils` (mic LED stuck on), `mem_sleep_default=deep` when the BIOS offers S3, and a warning if the CPU isn't using `amd-pstate`.
+What [`t14-amd.sh`](../.setup/t14-amd.sh) does: `fprintd` (fingerprint), `alsa-utils` (mic LED stuck on), `mem_sleep_default=deep` when the BIOS offers S3, and a warning if the CPU isn't using `amd-pstate`.
 
 No ThinkPad tools needed: `thinkpad_acpi` + power-profiles-daemon + Plasma's charge limit (start and end thresholds, e.g. 75–80%) cover it. Hibernate is skipped: resume is unreliable on this model.
 
@@ -287,9 +303,33 @@ sudo mkdir -p /data && sudo systemctl daemon-reload && sudo mount /data
 
 `<UUID>`: `lsblk -f` → the `crypto_LUKS` partition.
 
+### Kernel options
+
+Machine scripts add kernel options with `kernel_param <option>`. How it stays safe:
+
+- The boot is a **unified kernel image** (systemd-boot + mkinitcpio `default_uki`). Its options come from `/etc/kernel/cmdline`, one line; `kernel_param` appends to that line only.
+- An option that is already there is skipped, so re-running changes nothing.
+- The first edit saves the original as `/etc/kernel/cmdline.orig`.
+- Each change is printed, and the image is rebuilt **once** at the end (`mkinitcpio -P`), only if something changed.
+
+Check after reboot: `cat /proc/cmdline`.
+
+Undo: delete the word from `/etc/kernel/cmdline` (or `sudo cp /etc/kernel/cmdline.orig /etc/kernel/cmdline`), then `sudo mkinitcpio -P`.
+
+If an option stops the machine from booting:
+1. In the systemd-boot menu, press `e` on the entry and remove the option for this one boot (works while Secure Boot is off).
+2. Or boot the Arch USB, `cryptsetup open /dev/nvme0n1p2 root`, `mount /dev/mapper/root /mnt`, `mount /dev/nvme0n1p1 /mnt/boot`, `arch-chroot /mnt`, fix the file, `mkinitcpio -P`.
+
+Options in use:
+
+| Option | Machine | Why |
+|---|---|---|
+| `acpi_backlight=native` | tuf-a15 | brightness: use amdgpu's backlight, not `nvidia_wmi_ec_backlight` |
+| `mem_sleep_default=deep` | t14-amd | S3 sleep instead of s2idle (needs BIOS Sleep State = Linux) |
+
 ### A new machine
 
-1. Pick a hostname, e.g. `newbox`.
+1. Pick a hostname, e.g. `newbox`: lowercase, digits and `-`.
 2. Add `~/.setup/newbox.sh` (sourced by `install.sh`; can use `kernel_param` and `say`).
 3. Add a row to the table at the top.
 
@@ -321,7 +361,8 @@ Flatpak cursor wrong? `flatpak --user override --filesystem=xdg-data/icons:ro` (
 | `ssh-add -l`: "Could not open a connection" | log out and in once (environment.d); `systemctl --user status ssh-agent.socket`; `echo $SSH_AUTH_SOCK` |
 | Brightness slider does nothing | `ls /sys/class/backlight/`: should show `amdgpu_bl*`; check `acpi_backlight=native` in `/etc/kernel/cmdline` |
 | NVIDIA never sleeps | `runtime_status` (above); `fuser -v /dev/nvidia*`; is `libva-nvidia-driver` back? |
-| Kernel option not applied | `cat /proc/cmdline`; after editing `/etc/kernel/cmdline` run `sudo mkinitcpio -P` |
+| Kernel option not applied | `cat /proc/cmdline`; after editing `/etc/kernel/cmdline` run `sudo mkinitcpio -P` (see [Kernel options](#kernel-options)) |
+| `docker`/compose: "Cannot connect" | `systemctl --user status podman.socket`; `echo $DOCKER_HOST` (log out and in once) |
 | TRIM | `lsblk -D`: `DISC-GRAN` must not be `0B` on the `root` mapper |
 | zsh slow to start | `time zsh -i -c exit` (aim < 100 ms) |
 | Broken update | boot the live USB, `arch-chroot`, downgrade from `/var/cache/pacman/pkg` with `pacman -U` |
