@@ -55,8 +55,12 @@ flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/fl
 if [ "$de" = kde ]; then theme=org.gtk.Gtk3theme.Breeze; else theme="org.gtk.Gtk3theme.adw-gtk3 org.gtk.Gtk3theme.adw-gtk3-dark"; fi
 # shellcheck disable=SC2046,SC2086
 flatpak install --user --noninteractive flathub $(list "$dir/flatpak.txt") $theme
-# Zen as the default browser (links from every app, KDE and GNOME)
-xdg-settings set default-web-browser app.zen_browser.zen.desktop
+# Zen as the default browser (links from every app, KDE and GNOME). xdg-mime
+# writes ~/.config/mimeapps.list directly, so it also works from a bare TTY on
+# first run, where xdg-settings fails (no desktop detected) and set -e would
+# abort the rest of the script.
+xdg-mime default app.zen_browser.zen.desktop x-scheme-handler/http x-scheme-handler/https text/html ||
+    echo "!! could not set Zen as default browser: set it in System Settings"
 
 # qBittorrent: fixed port 51413 (allowed in ufw below). Only a starting config;
 # never overwrites one that exists.
