@@ -63,7 +63,7 @@ git --git-dir=$HOME/.dotfiles --work-tree=$HOME config status.showUntrackedFiles
 
 ```sh
 gh auth login                                   # GitHub; also sets up git credentials
-git config --file ~/.config/git/local user.name  "Abhishek Kaith"
+git config --file ~/.config/git/local user.name  "Your Name"
 git config --file ~/.config/git/local user.email "you@example.com"
 ```
 
