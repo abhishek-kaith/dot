@@ -55,6 +55,8 @@ flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/fl
 if [ "$de" = kde ]; then theme=org.gtk.Gtk3theme.Breeze; else theme="org.gtk.Gtk3theme.adw-gtk3 org.gtk.Gtk3theme.adw-gtk3-dark"; fi
 # shellcheck disable=SC2046,SC2086
 flatpak install --user --noninteractive flathub $(list "$dir/flatpak.txt") $theme
+# Zen as the default browser (links from every app, KDE and GNOME)
+xdg-settings set default-web-browser app.zen_browser.zen.desktop
 
 say "mise tools"
 mise install

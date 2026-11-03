@@ -94,10 +94,14 @@ Everything is in plain lists. Edit them, re-run `install.sh`.
 | Use | Pick | KDE | GNOME |
 |---|---|---|---|
 | Terminal | Ghostty (GPU) | ✓ | ✓ |
-| Browser | Zen (Flatpak) + Chromium | ✓ | ✓ |
+| Browser | Zen (Flatpak, default) + Chromium | ✓ | ✓ |
 | Passwords, SSH keys | Bitwarden | ✓ | ✓ |
 | 2FA codes (TOTP) | Ente Auth (Flatpak) | ✓ | ✓ |
 | Office | LibreOffice | ✓ | ✓ |
+| Chat | Telegram | ✓ | ✓ |
+| Screen recording | OBS Studio | ✓ | ✓ |
+| Photo gallery + quick edits | Shotwell (crop, straighten, enhance), Pinta (markup, resize) | ✓ | ✓ |
+| Phone screen on the laptop | scrcpy (Android, USB or Wi-Fi) | ✓ | ✓ |
 | Files | | Dolphin | Nautilus |
 | Images | | Gwenview | Loupe |
 | PDF | | Okular | Papers |
@@ -109,7 +113,7 @@ Everything is in plain lists. Edit them, re-run `install.sh`.
 
 The rule: the desktop's own app for files, images, PDFs and screenshots (it matches the theme and uses the GPU); my own pick only where it matters.
 
-**Browsers:** Zen (Flatpak, Firefox engine) and Chromium (pacman). Both decode video on the AMD GPU (Chromium since 143, no flags; check `chrome://gpu`).
+**Browsers:** Zen (Flatpak, Firefox engine, set as the default by `install.sh`) and Chromium (pacman, also used by dev tools; see [Dev tools](#dev-tools-mise)). Both decode video on the AMD GPU (Chromium since 143, no flags; check `chrome://gpu`).
 Autofill: the Bitwarden extension works in both, Flatpak or not, because it talks to Bitwarden's servers rather than to a local app.
 
 ### Passwords, 2FA, SSH
@@ -178,16 +182,19 @@ dev = "pnpm dev"
 
 Python: `uv python install`, `uv venv`. Updating: `mise up`; cleaning: `mise prune`.
 
+**Browser automation:** `environment.d` points tools at the system Chromium (`/usr/bin/chromium`): `CHROME_PATH` / `CHROME_BIN` (Lighthouse, Karma, chrome-launcher), `PUPPETEER_EXECUTABLE_PATH` (Puppeteer, with its download skipped) and `PLAYWRIGHT_MCP_EXECUTABLE_PATH` (Playwright MCP for AI agents). Playwright's test runner keeps its own pinned browser: `npx playwright install chromium` (skip `install-deps`, it only knows Debian/Ubuntu). To use the system one in a project anyway: `launchOptions: { executablePath: process.env.CHROME_PATH }`.
+
 Rule of thumb: **pacman** for the system and CLI tools the shell needs, **mise** for language runtimes and dev tools, **Flatpak** for GUI apps pacman doesn't have, **AppImage** only as a last resort.
 
 ### System setup done by `install.sh`
 
-- **Services:** bluetooth, cups (printing), `fstrim.timer` (SSD TRIM), `paccache.timer` (keeps 3 old package versions for downgrades), `reflector.timer` (mirrors), `ssh-agent.socket` + `podman.socket` (user).
+- **Services:** bluetooth, cups (printing), `fstrim.timer` (SSD TRIM), `paccache.timer` (keeps 3 old package versions for downgrades), `reflector.timer` (mirrors), `podman.socket` (user).
 - **Firewall:** `ufw`, deny incoming; KDE Connect / GSConnect ports `1714–1764` TCP+UDP open.
 - **zram:** Arch wiki tuning for in-memory swap (`swappiness=180`, `page-cluster=0`, watermarks).
 - **TRIM through LUKS2:** `cryptsetup --allow-discards --persistent refresh`, stored in the disk header (no kernel option).
 - **KDE:** KWallet on (app secrets), Ghostty as default terminal, `Meta+Return` opens Ghostty.
 - **Bitwarden** added to autostart (its SSH agent must be running).
+- **Zen** set as the default browser.
 - **GNOME:** `adw-gtk3` theme for GTK3 apps, `Super+Return` opens Ghostty.
 - **Shell:** login shell switched to zsh.
 - Then the machine script, `~/.setup/$(hostname).sh`.
@@ -377,6 +384,8 @@ Options in use:
 ## Theming
 
 Use **Breeze** on KDE and **Adwaita** on GNOME. No extra themes; dark mode reaches apps through the desktop portal.
+
+Terminal font: **JetBrainsMono Nerd Font** (icons included). Ghostty switches Breeze Light / Breeze with the desktop, and nvim picks tokyonight *day* or *night* from the terminal background at start.
 
 | App type | KDE | GNOME |
 |---|---|---|
