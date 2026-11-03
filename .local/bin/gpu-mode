@@ -5,7 +5,8 @@
 #   gpu-mode eco       NVIDIA GPU powered off: best battery. No prime-run, CUDA
 #                      or HDMI. The laptop panel and USB-C displays keep working.
 #   gpu-mode hybrid    NVIDIA GPU available: prime-run, CUDA, NVENC, HDMI.
-# Applies after a reboot; the firmware remembers the setting.
+# Switches live, no reboot; the firmware remembers the setting across boots.
+# HDMI follows at the next login (KWin picks its GPUs at login).
 #
 # Why eco exists: on this laptop the firmware sends NVPCF ACPI notifications that
 # make the NVIDIA driver wake the idle GPU again within a second (NVIDIA
@@ -43,4 +44,17 @@ if [ "$want" = 1 ] && [ -e /sys/bus/pci/devices/0000:01:00.0 ]; then
 fi
 
 echo "$want" | sudo tee "$attr/current_value" >/dev/null
-echo "gpu-mode: $1 after a reboot (systemctl reboot)"
+
+if [ "$want" = 0 ]; then
+    # Power is back: find the GPU on the bus again; udev loads the driver.
+    sleep 1
+    echo 1 | sudo tee /sys/bus/pci/rescan >/dev/null
+    for _ in 1 2 3 4 5 6 7 8 9 10; do
+        [ -e /dev/nvidiactl ] && break
+        sleep 1
+    done
+    sudo systemctl start nvidia-powerd.service 2>/dev/null || true
+    echo "hybrid: NVIDIA GPU on (prime-run and CUDA now; HDMI after your next login)"
+else
+    echo "eco: NVIDIA GPU off"
+fi

@@ -312,9 +312,10 @@ If it stays `active`, see what holds it: `sudo fuser -v /dev/nvidia* /dev/dri/ca
 ```sh
 gpu-mode            # show: eco or hybrid
 gpu-mode eco        # NVIDIA off: best battery; no prime-run/CUDA/HDMI (USB-C displays still work)
-gpu-mode hybrid     # NVIDIA back
-systemctl reboot    # either change applies after a reboot; the firmware remembers it
+gpu-mode hybrid     # NVIDIA back: prime-run/CUDA right away, HDMI after next login
 ```
+
+Switches live (no reboot); the firmware remembers the mode across boots.
 
 `gpu-mode eco` first detaches the GPU from its driver. If something still uses it, log out, switch to a console (Ctrl+Alt+F3) and run it there.
 
