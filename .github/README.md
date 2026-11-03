@@ -294,7 +294,7 @@ What [`tuf-a15.sh`](../.setup/tuf-a15.sh) does:
 | `vulkan-radeon` (common.txt) | without it the only Vulkan device is NVIDIA, so Vulkan apps wake it |
 | `acpi_backlight=native` | kernel picked `nvidia_wmi_ec_backlight` and skipped amdgpu's, so brightness did nothing |
 | udev names + `KWIN_DRM_DEVICES` (AMD first) | KWin and Xwayland otherwise render on NVIDIA and keep it awake (~13 W idle). Written to `~/.config/plasma-workspace/env/gpu.sh`, not tracked (this laptop only) |
-| enable `nvidia-powerd` | Dynamic Boost on AC: GPU 60 W → up to 95 W |
+| enable `nvidia-powerd` | Dynamic Boost on AC: GPU 60 W → up to 95 W (skipped when the GPU is off) |
 
 Already handled by Arch, nothing to do: runtime D3 (GPU powers off when idle), video memory saved on suspend (driver 595+; `nvidia-suspend/resume/hibernate` services correctly stay **disabled**), `nvidia-drm` modeset.
 
@@ -306,6 +306,17 @@ nvidia-smi --query-gpu=power.draw --format=csv                # wakes it briefly
 ```
 
 If it stays `active`, see what holds it: `sudo fuser -v /dev/nvidia* /dev/dri/card0`.
+
+**It stays `active` with nothing holding it: firmware bug.** The BIOS sends NVPCF ACPI notifications (Dynamic Boost budget updates) and the NVIDIA driver wakes the GPU for each one, within a second of it sleeping ([NVIDIA open-gpu-kernel-modules #1300](https://github.com/NVIDIA/open-gpu-kernel-modules/issues/1300), unfixed). Measured here: ~17 W idle on battery instead of ~7–9 W. Workaround: the firmware's own dGPU switch (Armoury Crate "Eco"):
+
+```sh
+gpu-mode            # show: eco or hybrid
+gpu-mode eco        # NVIDIA off: best battery; no prime-run/CUDA/HDMI (USB-C displays still work)
+gpu-mode hybrid     # NVIDIA back
+systemctl reboot    # either change applies after a reboot; the firmware remembers it
+```
+
+`gpu-mode eco` first detaches the GPU from its driver. If something still uses it, log out, switch to a console (Ctrl+Alt+F3) and run it there.
 
 **Using the NVIDIA GPU**
 
