@@ -4,7 +4,16 @@
 # `gpu-mode eco|hybrid` (~/.local/bin) turns the NVIDIA GPU off/on in firmware.
 
 say "NVIDIA driver + prime-run + nvtop"
-sudo pacman -S --needed nvidia-open nvidia-utils nvidia-prime nvtop
+# nvidia-open is built for the stock `linux` kernel only. Any other kernel
+# (linux-zen, linux-lts, ...) needs nvidia-open-dkms plus that kernel's headers.
+kernels=$(pacman -Qq linux linux-zen linux-lts linux-hardened 2>/dev/null || true)
+if [ "$kernels" = linux ]; then
+    nvdriver=nvidia-open
+else
+    nvdriver="nvidia-open-dkms $(printf '%s-headers ' $kernels)"
+fi
+# shellcheck disable=SC2086  # one word per package
+sudo pacman -S --needed $nvdriver nvidia-utils nvidia-prime nvtop
 
 # libva-nvidia-driver makes browsers decode video on the NVIDIA GPU and keeps it
 # awake (~12 W at idle). The AMD GPU decodes everything this laptop needs.

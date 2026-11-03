@@ -32,7 +32,7 @@ Boot the Arch ISO and run `archinstall`:
 | Setting | Choose |
 |---|---|
 | Profile | **Minimal** (the script installs the desktop and the right GPU drivers) |
-| Kernel | `linux` |
+| Kernel | `linux` (or `linux-zen`: tuf-a15.sh then installs `nvidia-open-dkms` + headers) |
 | Bootloader | systemd-boot (unified kernel image) |
 | Disk | LUKS encryption |
 | Audio | PipeWire |
