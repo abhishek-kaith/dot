@@ -58,6 +58,11 @@ flatpak install --user --noninteractive flathub $(list "$dir/flatpak.txt") $them
 # Zen as the default browser (links from every app, KDE and GNOME)
 xdg-settings set default-web-browser app.zen_browser.zen.desktop
 
+# qBittorrent: fixed port 51413 (allowed in ufw below). Only a starting config;
+# never overwrites one that exists.
+[ -e "$HOME/.config/qBittorrent/qBittorrent.conf" ] ||
+    install -Dm600 "$dir/qBittorrent.conf" "$HOME/.config/qBittorrent/qBittorrent.conf"
+
 say "mise tools"
 mise install
 
@@ -95,6 +100,7 @@ sudo ufw default deny incoming >/dev/null
 sudo ufw default allow outgoing >/dev/null
 sudo ufw allow 1714:1764/tcp >/dev/null
 sudo ufw allow 1714:1764/udp >/dev/null
+sudo ufw allow 51413 comment qBittorrent >/dev/null   # torrents: port set in qBittorrent.conf
 sudo ufw --force enable >/dev/null
 sudo systemctl enable ufw.service
 

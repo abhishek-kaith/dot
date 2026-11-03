@@ -191,7 +191,8 @@ Rule of thumb: **pacman** for the system and CLI tools the shell needs, **mise**
 ### System setup done by `install.sh`
 
 - **Services:** bluetooth, cups (printing), `fstrim.timer` (SSD TRIM), `paccache.timer` (keeps 3 old package versions for downgrades), `reflector.timer` (mirrors), `podman.socket` (user).
-- **Firewall:** `ufw`, deny incoming; KDE Connect / GSConnect ports `1714–1764` TCP+UDP open.
+- **Firewall:** `ufw`, deny incoming; KDE Connect / GSConnect ports `1714–1764` TCP+UDP open; `51413` TCP+UDP for qBittorrent (only qBittorrent listens there).
+- **qBittorrent:** starting config with fixed port `51413`, UPnP on, Web UI off ([`qBittorrent.conf`](../.setup/qBittorrent.conf)); copied only if none exists.
 - **zram:** Arch wiki tuning for in-memory swap (`swappiness=180`, `page-cluster=0`, watermarks).
 - **TRIM through LUKS2:** `cryptsetup --allow-discards --persistent refresh`, stored in the disk header (no kernel option).
 - **KDE:** KWallet on (app secrets), Ghostty as default terminal, `Meta+Return` opens Ghostty.
