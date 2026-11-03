@@ -141,7 +141,7 @@ Turn on 2FA for the Bitwarden account itself **with Ente Auth**, never with Bitw
 ```sh
 export BW_SESSION=$(bw unlock --raw)
 ssh-config-sync push     # after editing ~/.ssh/config
-ssh-config-sync pull     # new machine: restore it
+ssh-config-sync pull     # new machine: restore it + ~/.ssh/keys/*.pub
 ```
 
 Each host pins its key with `IdentityFile ~/.ssh/keys/<name>.pub` + `IdentitiesOnly yes`: ssh then asks Bitwarden for that one key instead of trying all of them. The `.pub` files are public; on a new machine recreate them from Bitwarden (each SSH key item shows its public key). GitHub accounts each get an alias (`github-zti`, `github-24`, ...): `git clone git@github-zti:org/repo.git`.

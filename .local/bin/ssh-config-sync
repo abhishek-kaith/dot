@@ -1,7 +1,8 @@
 #!/bin/sh
 # Keep ~/.ssh/config in a Bitwarden secure note ("ssh config", folder Personal).
 #   ssh-config-sync push    save ~/.ssh/config to Bitwarden (create or update)
-#   ssh-config-sync pull    restore ~/.ssh/config from Bitwarden (old one -> .bak)
+#   ssh-config-sync pull    restore ~/.ssh/config from Bitwarden (old one -> .bak),
+#                           plus ~/.ssh/keys/<name>.pub from every "SSH: <name> (...)" item
 # Needs an unlocked CLI: export BW_SESSION=$(bw unlock --raw)
 set -eu
 
@@ -36,6 +37,14 @@ pull)
     umask 077
     bw get item "$id" | jq -r '.notes' > "$file"
     echo "restored $file$note"
+    # public keys: the config's IdentityFile lines point at these
+    mkdir -p "$HOME/.ssh/keys"; chmod 700 "$HOME/.ssh/keys"
+    bw list items | jq -r '.[] | select(.type == 5 and (.name | test("^SSH: [^ ]+")))
+        | [(.name | capture("^SSH: (?<n>[^ ]+)").n), .sshKey.publicKey] | @tsv' |
+    while IFS="$(printf '\t')" read -r key pub; do
+        printf '%s\n' "$pub" > "$HOME/.ssh/keys/$key.pub"
+        echo "restored ~/.ssh/keys/$key.pub"
+    done
     ;;
 *)
     echo "usage: ssh-config-sync push|pull" >&2; exit 1 ;;
