@@ -124,6 +124,10 @@ do
 		-- by hand: these propagate to every group tokyonight defines, so float
 		-- borders, popups and notifications stay consistent with the editor
 		-- instead of keeping a solid background.
+		-- follow the terminal: nvim asks Ghostty for its background at start,
+		-- so a light desktop gets "day" and a dark one gets "night"
+		style = "night",
+		light_style = "day",
 		transparent = true,
 		styles = {
 			comments = { italic = false },
@@ -131,7 +135,7 @@ do
 			sidebars = "transparent",
 		},
 	})
-	vim.cmd.colorscheme("tokyonight-night")
+	vim.cmd.colorscheme("tokyonight")
 end
 
 ----------------------------------------------------------------------
