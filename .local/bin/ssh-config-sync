@@ -1,0 +1,42 @@
+#!/bin/sh
+# Keep ~/.ssh/config in a Bitwarden secure note ("ssh config", folder Personal).
+#   ssh-config-sync push    save ~/.ssh/config to Bitwarden (create or update)
+#   ssh-config-sync pull    restore ~/.ssh/config from Bitwarden (old one -> .bak)
+# Needs an unlocked CLI: export BW_SESSION=$(bw unlock --raw)
+set -eu
+
+name="ssh config"
+file="$HOME/.ssh/config"
+
+[ "$(bw status 2>/dev/null | jq -r .status)" = unlocked ] ||
+    { echo 'unlock first: export BW_SESSION=$(bw unlock --raw)' >&2; exit 1; }
+bw sync >/dev/null
+id=$(bw list items --search "$name" | jq -r --arg n "$name" 'map(select(.name == $n and .type == 2))[0].id // empty')
+
+case ${1:-} in
+push)
+    [ -f "$file" ] || { echo "no $file" >&2; exit 1; }
+    if [ -n "$id" ]; then
+        bw get item "$id" | jq --rawfile n "$file" '.notes = $n' | bw encode | bw edit item "$id" >/dev/null
+        echo "updated Bitwarden note \"$name\""
+    else
+        folder=$(bw list folders | jq -r 'map(select(.name == "Personal"))[0].id // empty')
+        bw get template item | jq --rawfile n "$file" --arg f "$folder" \
+            '.type = 2 | .secureNote = {type: 0} | .login = null | .name = "ssh config"
+             | .notes = $n | .folderId = (if $f == "" then null else $f end)' |
+            bw encode | bw create item >/dev/null
+        echo "created Bitwarden note \"$name\""
+    fi
+    ;;
+pull)
+    [ -n "$id" ] || { echo "no Bitwarden note \"$name\"" >&2; exit 1; }
+    mkdir -p "$HOME/.ssh"; chmod 700 "$HOME/.ssh"
+    note=""
+    if [ -f "$file" ]; then cp "$file" "$file.bak"; note=" (previous copy: $file.bak)"; fi
+    umask 077
+    bw get item "$id" | jq -r '.notes' > "$file"
+    echo "restored $file$note"
+    ;;
+*)
+    echo "usage: ssh-config-sync push|pull" >&2; exit 1 ;;
+esac

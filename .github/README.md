@@ -130,6 +130,16 @@ Turn on 2FA for the Bitwarden account itself **with Ente Auth**, never with Bitw
 2. Copy its public key to GitHub: `gh ssh-key add` (pipe it in or paste it), or GitHub > Settings > SSH keys.
 3. Test: `ssh-add -L` lists the key; `ssh -T git@github.com` asks Bitwarden to approve, then says hello.
 
+**`~/.ssh/config`** (hosts, users, which key per host) is kept out of this public repo. Its copy lives in a Bitwarden secure note, `ssh config`:
+
+```sh
+export BW_SESSION=$(bw unlock --raw)
+ssh-config-sync push     # after editing ~/.ssh/config
+ssh-config-sync pull     # new machine: restore it
+```
+
+Each host pins its key with `IdentityFile ~/.ssh/keys/<name>.pub` + `IdentitiesOnly yes`: ssh then asks Bitwarden for that one key instead of trying all of them. The `.pub` files are public; on a new machine recreate them from Bitwarden (each SSH key item shows its public key). GitHub accounts each get an alias (`github-zti`, `github-24`, ...): `git clone git@github-zti:org/repo.git`.
+
 Bitwarden must be running and unlocked for SSH to work. `install.sh` puts it in autostart; with *Start to tray* it sits in the tray. Each use pops up an approval prompt in Bitwarden.
 
 **Ente Auth backups / moving codes:** with an Ente account codes sync by themselves. Offline mode: Settings > Data > Export (encrypted), send the file with **KDE Connect** (Dolphin > right-click > *Send to device*, or the phone's share menu), import on the other side, delete the file.
