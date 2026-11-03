@@ -85,6 +85,13 @@ say "services"
 sudo systemctl enable --now bluetooth.service cups.socket fstrim.timer paccache.timer reflector.timer
 # Keep a login screen that is already set up; only enable one on a fresh install.
 [ -e /etc/systemd/system/display-manager.service ] || sudo systemctl enable "$dm"
+# Except SDDM on KDE (archinstall's pick): its X11 greeter leaves an Xorg running
+# after login, which keeps the NVIDIA GPU awake. Plasma Login Manager is Wayland.
+if [ "$de" = kde ] && [ "$(readlink /etc/systemd/system/display-manager.service)" = /usr/lib/systemd/system/sddm.service ]; then
+    sudo systemctl disable sddm.service
+    sudo systemctl enable "$dm"
+    echo "  login screen: SDDM -> Plasma Login Manager (after reboot)"
+fi
 systemctl --user enable --now podman.socket
 
 # Bitwarden starts at login (to the tray), so its SSH agent is always there.

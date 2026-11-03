@@ -201,6 +201,7 @@ Rule of thumb: **pacman** for the system and CLI tools the shell needs, **mise**
 - **qBittorrent:** starting config with fixed port `51413`, UPnP on, Web UI off ([`qBittorrent.conf`](../.setup/qBittorrent.conf)); copied only if none exists.
 - **zram:** Arch wiki tuning for in-memory swap (`swappiness=180`, `page-cluster=0`, watermarks).
 - **TRIM through LUKS2:** `cryptsetup --allow-discards --persistent refresh`, stored in the disk header (no kernel option).
+- **Login screen:** Plasma Login Manager (KDE) / GDM (GNOME). On KDE an existing SDDM is replaced: its leftover Xorg keeps the NVIDIA GPU awake.
 - **KDE:** KWallet on (app secrets), Ghostty as default terminal, `Meta+Return` opens Ghostty.
 - **Bitwarden** added to autostart (its SSH agent must be running).
 - **Zen** set as the default browser.
