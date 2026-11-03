@@ -55,10 +55,11 @@ flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/fl
 if [ "$de" = kde ]; then theme=org.gtk.Gtk3theme.Breeze; else theme="org.gtk.Gtk3theme.adw-gtk3 org.gtk.Gtk3theme.adw-gtk3-dark"; fi
 # shellcheck disable=SC2046,SC2086
 flatpak install --user --noninteractive flathub $(list "$dir/flatpak.txt") $theme
-# Zen as the default browser (links from every app, KDE and GNOME). xdg-mime
-# writes ~/.config/mimeapps.list directly, so it also works from a bare TTY on
-# first run, where xdg-settings fails (no desktop detected) and set -e would
-# abort the rest of the script.
+# Zen as the default browser (links from every app, KDE and GNOME). Not
+# xdg-settings: it looks for Zen's .desktop file on XDG_DATA_DIRS, which only
+# gets the flatpak path at the next login (/etc/profile.d/flatpak.sh), so on a
+# first run it fails silently (exit 2) and set -e ends the script. xdg-mime
+# writes ~/.config/mimeapps.list without that lookup.
 xdg-mime default app.zen_browser.zen.desktop x-scheme-handler/http x-scheme-handler/https text/html ||
     echo "!! could not set Zen as default browser: set it in System Settings"
 
