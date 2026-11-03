@@ -71,6 +71,12 @@ git config --file ~/.config/git/local user.email "you@example.com"
 - **Refresh rate / VRR:** System Settings > Display. Set Adaptive Sync to *Automatic*.
 - **Bitwarden:** log in; Settings > *Enable SSH agent*, *Start to tray*, *Close to tray*. Install the Bitwarden extension in Zen and Chromium. See [Passwords, 2FA, SSH](#passwords-2fa-ssh).
 - **Ente Auth:** log in (or choose offline), turn on App lock.
+- **SSH config + public keys** (after Bitwarden is logged in):
+  ```sh
+  bw login && export BW_SESSION=$(bw unlock --raw)
+  ssh-config-sync pull && bw lock
+  ssh -T git@github.com            # Bitwarden asks to approve the key
+  ```
 - **Mic:** pick *Noise Canceling Source* as the default input.
 - **GNOME only:** install GSConnect from Extension Manager, then log in and re-run `~/.setup/install.sh gnome` once so the GNOME settings apply.
 
