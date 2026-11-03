@@ -115,6 +115,9 @@ say "desktop settings: $de"
 if [ "$de" = kde ]; then
     # KWallet stores app secrets (gh token, Chromium, Wi-Fi); passwords are in Bitwarden.
     kwriteconfig6 --file kwalletrc --group Wallet --key Enabled true
+    # no splash animation after login: straight to the desktop
+    kwriteconfig6 --file ksplashrc --group KSplash --key Engine none
+    kwriteconfig6 --file ksplashrc --group KSplash --key Theme None
     kwriteconfig6 --file kdeglobals --group General --key TerminalApplication ghostty
     kwriteconfig6 --file kdeglobals --group General --key TerminalService com.mitchellh.ghostty.desktop
     kwriteconfig6 --file kglobalshortcutsrc --group services --group com.mitchellh.ghostty.desktop \
