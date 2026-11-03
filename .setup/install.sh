@@ -78,7 +78,15 @@ say "services"
 sudo systemctl enable --now bluetooth.service cups.socket fstrim.timer paccache.timer reflector.timer
 # Keep a login screen that is already set up; only enable one on a fresh install.
 [ -e /etc/systemd/system/display-manager.service ] || sudo systemctl enable "$dm"
-systemctl --user enable --now ssh-agent.socket podman.socket
+systemctl --user enable --now podman.socket
+
+# Bitwarden starts at login (to the tray), so its SSH agent is always there.
+mkdir -p "$HOME/.config/autostart"
+for f in /usr/share/applications/bitwarden*.desktop; do
+    if [ -f "$f" ] && [ ! -e "$HOME/.config/autostart/${f##*/}" ]; then
+        cp "$f" "$HOME/.config/autostart/"
+    fi
+done
 
 say "firewall (deny incoming; allow KDE Connect / GSConnect)"
 sudo ufw default deny incoming >/dev/null
@@ -90,8 +98,8 @@ sudo systemctl enable ufw.service
 
 say "desktop settings: $de"
 if [ "$de" = kde ]; then
-    # KeePassXC is the secret store and SSH agent, not KWallet.
-    kwriteconfig6 --file kwalletrc --group Wallet --key Enabled false
+    # KWallet stores app secrets (gh token, Chromium, Wi-Fi); passwords are in Bitwarden.
+    kwriteconfig6 --file kwalletrc --group Wallet --key Enabled true
     kwriteconfig6 --file kdeglobals --group General --key TerminalApplication ghostty
     kwriteconfig6 --file kdeglobals --group General --key TerminalService com.mitchellh.ghostty.desktop
     kwriteconfig6 --file kglobalshortcutsrc --group services --group com.mitchellh.ghostty.desktop \

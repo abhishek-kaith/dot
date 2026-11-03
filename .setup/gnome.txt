@@ -1,7 +1,7 @@
-# GNOME. gnome-keyring is left out on purpose: KeePassXC is the secret store.
+# GNOME. gnome-keyring stores app secrets (gh, Chromium); passwords live in Bitwarden.
 # KDE Connect on GNOME = GSConnect, installed through Extension Manager.
 
-gnome-shell gdm gnome-control-center xdg-desktop-portal-gnome xdg-user-dirs-gtk
+gnome-shell gdm gnome-control-center gnome-keyring xdg-desktop-portal-gnome xdg-user-dirs-gtk
 gnome-backgrounds
 nautilus sushi file-roller gvfs-mtp gvfs-smb
 loupe papers gnome-text-editor gnome-calculator

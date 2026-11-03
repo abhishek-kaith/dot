@@ -33,8 +33,8 @@ lazydocker dive               # TUI for containers / inspect image layers
 
 # ── apps ──
 ghostty                       # terminal (GPU)
-chromium                      # browser (VA-API on AMD since 143; KeePassXC autofill works)
-keepassxc                     # passwords, TOTP, SSH keys
+chromium                      # browser (VA-API on AMD since 143)
+bitwarden bitwarden-cli       # passwords + SSH agent (desktop app), `bw` CLI
 mpv                           # video (GPU)
 libreoffice-fresh             # docx / xlsx / pptx
 

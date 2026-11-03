@@ -14,7 +14,7 @@ Machines:
 ## Contents
 
 - [Fresh install](#fresh-install)
-- [What gets installed](#what-gets-installed) · [Containers](#containers-rootless-podman)
+- [What gets installed](#what-gets-installed) · [Passwords, 2FA, SSH](#passwords-2fa-ssh) · [Containers](#containers-rootless-podman)
 - [Daily use](#daily-use)
 - [Layout](#layout)
 - [Per-machine notes](#per-machine-notes) · [Kernel options](#kernel-options)
@@ -69,7 +69,8 @@ git config --file ~/.config/git/local user.email "you@example.com"
 
 - **Battery limit:** System Settings > Power > Advanced (KDE). 80% is a good default.
 - **Refresh rate / VRR:** System Settings > Display. Set Adaptive Sync to *Automatic*.
-- **KeePassXC:** Settings > SSH Agent > enable; Settings > Secret Service Integration > enable.
+- **Bitwarden:** log in; Settings > *Enable SSH agent*, *Start to tray*, *Close to tray*. Install the Bitwarden extension in Zen and Chromium. See [Passwords, 2FA, SSH](#passwords-2fa-ssh).
+- **Ente Auth:** log in (or choose offline), turn on App lock.
 - **Mic:** pick *Noise Canceling Source* as the default input.
 - **GNOME only:** install GSConnect from Extension Manager, then log in and re-run `~/.setup/install.sh gnome` once so the GNOME settings apply.
 
@@ -94,7 +95,8 @@ Everything is in plain lists. Edit them, re-run `install.sh`.
 |---|---|---|---|
 | Terminal | Ghostty (GPU) | ✓ | ✓ |
 | Browser | Zen (Flatpak) + Chromium | ✓ | ✓ |
-| Passwords, TOTP, SSH keys | KeePassXC | ✓ | ✓ |
+| Passwords, SSH keys | Bitwarden | ✓ | ✓ |
+| 2FA codes (TOTP) | Ente Auth (Flatpak) | ✓ | ✓ |
 | Office | LibreOffice | ✓ | ✓ |
 | Files | | Dolphin | Nautilus |
 | Images | | Gwenview | Loupe |
@@ -108,7 +110,29 @@ Everything is in plain lists. Edit them, re-run `install.sh`.
 The rule: the desktop's own app for files, images, PDFs and screenshots (it matches the theme and uses the GPU); my own pick only where it matters.
 
 **Browsers:** Zen (Flatpak, Firefox engine) and Chromium (pacman). Both decode video on the AMD GPU (Chromium since 143, no flags; check `chrome://gpu`).
-KeePassXC autofill: works in Chromium out of the box (KeePassXC > Settings > Browser Integration > Chromium). Zen as a Flatpak is sandboxed, so the KeePassXC-Browser extension can't reach KeePassXC without extra setup. In Zen, copy from KeePassXC instead (`Ctrl+B` username, `Ctrl+C` password; the clipboard clears itself). Auto-Type is not an option: it does not work on Wayland.
+Autofill: the Bitwarden extension works in both, Flatpak or not, because it talks to Bitwarden's servers rather than to a local app.
+
+### Passwords, 2FA, SSH
+
+Three separate stores, on purpose:
+
+| What | Where | Why there |
+|---|---|---|
+| Website/app passwords, notes, recovery codes | **Bitwarden** (synced, end-to-end encrypted) | every device, browser autofill |
+| 2FA codes (TOTP) | **Ente Auth** (phone + this laptop) | kept apart from passwords, so a leaked vault is not also a leaked second factor |
+| App secrets: `gh` token, Chromium's keys, Wi-Fi | **KWallet** (KDE) / **gnome-keyring** (GNOME) | the desktop's Secret Service; unlocks with your login |
+
+Turn on 2FA for the Bitwarden account itself **with Ente Auth**, never with Bitwarden.
+
+**SSH keys live in Bitwarden.** The desktop app runs an SSH agent at `~/.bitwarden-ssh-agent.sock`, and `SSH_AUTH_SOCK` points there (`~/.config/environment.d/10-env.conf`). No key files in `~/.ssh`:
+
+1. Bitwarden > New > SSH key: generate one (ed25519) or import an existing one.
+2. Copy its public key to GitHub: `gh ssh-key add` (pipe it in or paste it), or GitHub > Settings > SSH keys.
+3. Test: `ssh-add -L` lists the key; `ssh -T git@github.com` asks Bitwarden to approve, then says hello.
+
+Bitwarden must be running and unlocked for SSH to work. `install.sh` puts it in autostart; with *Start to tray* it sits in the tray. Each use pops up an approval prompt in Bitwarden.
+
+**Ente Auth backups / moving codes:** with an Ente account codes sync by themselves. Offline mode: Settings > Data > Export (encrypted), send the file with **KDE Connect** (Dolphin > right-click > *Send to device*, or the phone's share menu), import on the other side, delete the file.
 
 ### CLI
 
@@ -152,7 +176,8 @@ Rule of thumb: **pacman** for the system and CLI tools the shell needs, **mise**
 - **Firewall:** `ufw`, deny incoming; KDE Connect / GSConnect ports `1714–1764` TCP+UDP open.
 - **zram:** Arch wiki tuning for in-memory swap (`swappiness=180`, `page-cluster=0`, watermarks).
 - **TRIM through LUKS2:** `cryptsetup --allow-discards --persistent refresh`, stored in the disk header (no kernel option).
-- **KDE:** KWallet off (KeePassXC is the secret store), Ghostty as default terminal, `Meta+Return` opens Ghostty.
+- **KDE:** KWallet on (app secrets), Ghostty as default terminal, `Meta+Return` opens Ghostty.
+- **Bitwarden** added to autostart (its SSH agent must be running).
 - **GNOME:** `adw-gtk3` theme for GTK3 apps, `Super+Return` opens Ghostty.
 - **Shell:** login shell switched to zsh.
 - Then the machine script, `~/.setup/$(hostname).sh`.
@@ -223,7 +248,7 @@ AI coding agents and scripts start **non-interactive** zsh, which still reads `.
 
 ### Why `environment.d` and not `.zprofile`
 
-Shell profiles only reach terminals. KeePassXC, the editor launched from the menu and everything else the desktop starts get their environment from systemd's `environment.d`. That is where `SSH_AUTH_SOCK` must be set for KeePassXC's SSH agent integration to work everywhere.
+Shell profiles only reach terminals. The editor launched from the menu, git GUIs and everything else the desktop starts get their environment from systemd's `environment.d`. That is where `SSH_AUTH_SOCK` must be set for Bitwarden's SSH agent to work everywhere, not just in terminals.
 
 ---
 
@@ -362,7 +387,8 @@ Flatpak cursor wrong? `flatpak --user override --filesystem=xdg-data/icons:ro` (
 
 | Problem | Check |
 |---|---|
-| `ssh-add -l`: "Could not open a connection" | log out and in once (environment.d); `systemctl --user status ssh-agent.socket`; `echo $SSH_AUTH_SOCK` |
+| `ssh-add -L`: "Could not open a connection" | Is Bitwarden running and unlocked, with Settings > SSH agent on? `echo $SSH_AUTH_SOCK` should be `~/.bitwarden-ssh-agent.sock` (log out and in once after changing environment.d) |
+| `gh`: "token is invalid" | KWallet must be enabled (System Settings > KDE Wallet), then `gh auth login` |
 | Brightness slider does nothing | `ls /sys/class/backlight/`: should show `amdgpu_bl*`; check `acpi_backlight=native` in `/etc/kernel/cmdline` |
 | NVIDIA never sleeps | `runtime_status` (above); `fuser -v /dev/nvidia*`; is `libva-nvidia-driver` back? |
 | Kernel option not applied | `cat /proc/cmdline`; after editing `/etc/kernel/cmdline` run `sudo mkinitcpio -P` (see [Kernel options](#kernel-options)) |

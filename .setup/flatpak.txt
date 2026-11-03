@@ -3,3 +3,4 @@
 com.github.tchx84.Flatseal    # manage Flatpak permissions
 it.mijorus.gearlever          # AppImages: menu entries + updates
 app.zen_browser.zen           # Zen browser (Firefox engine)
+io.ente.auth                  # Ente Auth: TOTP codes (syncs with the phone app)
