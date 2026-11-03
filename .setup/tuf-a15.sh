@@ -5,7 +5,7 @@
 say "NVIDIA driver + prime-run + nvtop"
 sudo pacman -S --needed nvidia-open nvidia-utils nvidia-prime nvtop
 
-# libva-nvidia-driver makes Firefox decode video on the NVIDIA GPU and keeps it
+# libva-nvidia-driver makes browsers decode video on the NVIDIA GPU and keeps it
 # awake (~12 W at idle). The AMD GPU decodes everything this laptop needs.
 if pacman -Q libva-nvidia-driver >/dev/null 2>&1; then
     say "removing libva-nvidia-driver"

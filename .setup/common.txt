@@ -33,8 +33,7 @@ lazydocker dive               # TUI for containers / inspect image layers
 
 # ── apps ──
 ghostty                       # terminal (GPU)
-firefox                       # daily browser
-chromium                      # second browser, for testing sites
+chromium                      # browser (VA-API on AMD since 143; KeePassXC autofill works)
 keepassxc                     # passwords, TOTP, SSH keys
 mpv                           # video (GPU)
 libreoffice-fresh             # docx / xlsx / pptx

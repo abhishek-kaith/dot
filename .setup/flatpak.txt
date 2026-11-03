@@ -2,4 +2,4 @@
 
 com.github.tchx84.Flatseal    # manage Flatpak permissions
 it.mijorus.gearlever          # AppImages: menu entries + updates
-# app.zen_browser.zen         # Zen browser, if you want it
+app.zen_browser.zen           # Zen browser (Firefox engine)

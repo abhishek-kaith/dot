@@ -93,7 +93,7 @@ Everything is in plain lists. Edit them, re-run `install.sh`.
 | Use | Pick | KDE | GNOME |
 |---|---|---|---|
 | Terminal | Ghostty (GPU) | ✓ | ✓ |
-| Browser | Firefox (daily), Chromium (testing) | ✓ | ✓ |
+| Browser | Zen (Flatpak) + Chromium | ✓ | ✓ |
 | Passwords, TOTP, SSH keys | KeePassXC | ✓ | ✓ |
 | Office | LibreOffice | ✓ | ✓ |
 | Files | | Dolphin | Nautilus |
@@ -106,6 +106,9 @@ Everything is in plain lists. Edit them, re-run `install.sh`.
 | Phone link | | KDE Connect | GSConnect |
 
 The rule: the desktop's own app for files, images, PDFs and screenshots (it matches the theme and uses the GPU); my own pick only where it matters.
+
+**Browsers:** Zen (Flatpak, Firefox engine) and Chromium (pacman). Both decode video on the AMD GPU (Chromium since 143, no flags; check `chrome://gpu`).
+KeePassXC autofill: works in Chromium out of the box (KeePassXC > Settings > Browser Integration > Chromium). Zen as a Flatpak is sandboxed, so the KeePassXC-Browser extension can't reach KeePassXC without extra setup. Use Chromium or KeePassXC's Auto-Type (`Ctrl+Shift+V` in the database) there.
 
 ### CLI
 
@@ -235,7 +238,7 @@ What [`tuf-a15.sh`](../.setup/tuf-a15.sh) does:
 | Change | Why |
 |---|---|
 | `nvidia-open nvidia-utils nvidia-prime nvtop` | driver, `prime-run`, GPU monitor |
-| remove `libva-nvidia-driver` | Firefox otherwise decodes video on NVIDIA and keeps it awake (~12 W idle) |
+| remove `libva-nvidia-driver` | browsers otherwise decode video on NVIDIA and keep it awake (~12 W idle) |
 | `vulkan-radeon` (common.txt) | without it the only Vulkan device is NVIDIA, so Vulkan apps wake it |
 | `acpi_backlight=native` | kernel picked `nvidia_wmi_ec_backlight` and skipped amdgpu's, so brightness did nothing |
 | enable `nvidia-powerd` | Dynamic Boost on AC: GPU 60 W → up to 95 W |
