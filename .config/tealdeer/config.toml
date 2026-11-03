@@ -1,0 +1,4 @@
+# tldr pages refresh themselves once a month (no manual `tldr --update`)
+[updates]
+auto_update = true
+auto_update_interval_hours = 720

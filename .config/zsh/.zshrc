@@ -33,10 +33,10 @@ bindkey -s '^f' 'tmux-sessionizer\n'
 alias dot='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
 alias lazydot='lazygit --git-dir=$HOME/.dotfiles --work-tree=$HOME'
 
-alias ls='eza --group-directories-first'
-alias ll='eza -l --git --group-directories-first'
-alias la='eza -la --git --group-directories-first'
-alias lt='eza --tree --level=2'
+alias ls='eza --icons=auto --group-directories-first'
+alias ll='eza -l --icons=auto --git --group-directories-first'
+alias la='eza -la --icons=auto --git --group-directories-first'
+alias lt='eza --tree --level=2 --icons=auto'
 alias vim='nvim'
 alias g='git'
 alias lg='lazygit'
@@ -46,6 +46,9 @@ export BAT_THEME=ansi
 
 # ── tools ────────────────────────────────────────────────────────────
 # fzf: Ctrl+R history, Ctrl+T files, Alt+C cd (after bindkey -v on purpose)
+export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
+export FZF_CTRL_T_COMMAND=$FZF_DEFAULT_COMMAND
+export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
 source <(fzf --zsh)
 eval "$(zoxide init zsh)"      # z <part-of-dir>
 eval "$(starship init zsh)"
