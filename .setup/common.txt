@@ -37,6 +37,11 @@ chromium                      # browser (VA-API on AMD since 143)
 bitwarden bitwarden-cli       # passwords + SSH agent (desktop app), `bw` CLI
 mpv                           # video (GPU)
 libreoffice-fresh             # docx / xlsx / pptx
+obs-studio                    # screen recording / streaming (NVENC on NVIDIA, VA-API on AMD)
+telegram-desktop              # Telegram (Qt, follows light/dark)
+shotwell                      # photo gallery + phone-style edits: crop, straighten, enhance
+pinta                         # quick drawing / markup / resize (Paint.NET-like)
+scrcpy                        # show + control the Android phone on the laptop (USB or Wi-Fi)
 
 # ── graphics + media ──
 vulkan-radeon                 # AMD Vulkan; without it Vulkan apps wake the NVIDIA GPU
