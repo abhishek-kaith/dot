@@ -108,7 +108,7 @@ Everything is in plain lists. Edit them, re-run `install.sh`.
 The rule: the desktop's own app for files, images, PDFs and screenshots (it matches the theme and uses the GPU); my own pick only where it matters.
 
 **Browsers:** Zen (Flatpak, Firefox engine) and Chromium (pacman). Both decode video on the AMD GPU (Chromium since 143, no flags; check `chrome://gpu`).
-KeePassXC autofill: works in Chromium out of the box (KeePassXC > Settings > Browser Integration > Chromium). Zen as a Flatpak is sandboxed, so the KeePassXC-Browser extension can't reach KeePassXC without extra setup. Use Chromium or KeePassXC's Auto-Type (`Ctrl+Shift+V` in the database) there.
+KeePassXC autofill: works in Chromium out of the box (KeePassXC > Settings > Browser Integration > Chromium). Zen as a Flatpak is sandboxed, so the KeePassXC-Browser extension can't reach KeePassXC without extra setup. In Zen, copy from KeePassXC instead (`Ctrl+B` username, `Ctrl+C` password; the clipboard clears itself). Auto-Type is not an option: it does not work on Wayland.
 
 ### CLI
 
