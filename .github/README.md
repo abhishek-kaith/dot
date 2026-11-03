@@ -283,7 +283,7 @@ Shell profiles only reach terminals. The editor launched from the menu, git GUIs
 
 ### `tuf-a15`: ASUS TUF Gaming A15
 
-Hybrid graphics: the laptop panel and USB-C ports run on the AMD iGPU; HDMI is wired to the NVIDIA GPU and is **not used**: the desktop (KWin) runs on AMD only, so the NVIDIA GPU is never held by the session. External monitors: USB-C.
+Hybrid graphics: the laptop panel and USB-C ports run on the AMD iGPU; **HDMI is wired to the NVIDIA GPU**.
 
 What [`tuf-a15.sh`](../.setup/tuf-a15.sh) does:
 
@@ -293,7 +293,7 @@ What [`tuf-a15.sh`](../.setup/tuf-a15.sh) does:
 | remove `libva-nvidia-driver` | browsers otherwise decode video on NVIDIA and keep it awake (~12 W idle) |
 | `vulkan-radeon` (common.txt) | without it the only Vulkan device is NVIDIA, so Vulkan apps wake it |
 | `acpi_backlight=native` | kernel picked `nvidia_wmi_ec_backlight` and skipped amdgpu's, so brightness did nothing |
-| KWin on AMD only: `KWIN_DRM_DEVICES` (`~/.config/plasma-workspace/env/gpu.sh`) + Mesa-only EGL for KWin's unit (`~/.config/systemd/user/plasma-kwin_wayland.service.d/egl-mesa.conf`) | otherwise KWin and Xwayland hold the NVIDIA GPU (~13 W idle) and `gpu-mode` can't switch live. Apps don't inherit it, so `prime-run` works. Both files written by the script, not tracked (this laptop only) |
+| udev names + `KWIN_DRM_DEVICES` (AMD first) | KWin and Xwayland otherwise render on NVIDIA and keep it awake (~13 W idle). Written to `~/.config/plasma-workspace/env/gpu.sh`, not tracked (this laptop only) |
 | enable `nvidia-powerd` | Dynamic Boost on AC: GPU 60 W → up to 95 W (skipped when the GPU is off) |
 
 Already handled by Arch, nothing to do: runtime D3 (GPU powers off when idle), video memory saved on suspend (driver 595+; `nvidia-suspend/resume/hibernate` services correctly stay **disabled**), `nvidia-drm` modeset.
@@ -311,13 +311,13 @@ If it stays `active`, see what holds it: `sudo fuser -v /dev/nvidia* /dev/dri/ca
 
 ```sh
 gpu-mode            # show: eco or hybrid
-gpu-mode eco        # NVIDIA off: best battery; no prime-run/CUDA
-gpu-mode hybrid     # NVIDIA on: prime-run, CUDA, NVENC
+gpu-mode eco        # NVIDIA off: best battery; no prime-run/CUDA/HDMI (USB-C displays still work)
+gpu-mode hybrid     # NVIDIA back: prime-run/CUDA right away, HDMI after next login
 ```
 
-Instant both ways (no reboot, no logout); the firmware remembers the mode across boots.
+Switches live (no reboot); the firmware remembers the mode across boots.
 
-`gpu-mode eco` first detaches the GPU from its driver; if an app still uses it (a game, an open CUDA/Jupyter kernel), it says which one to close.
+`gpu-mode eco` first detaches the GPU from its driver. If something still uses it, log out, switch to a console (Ctrl+Alt+F3) and run it there.
 
 **Using the NVIDIA GPU**
 
@@ -332,7 +332,7 @@ A CUDA process (including an idle Jupyter kernel) keeps the GPU awake: close it 
 
 **Max performance:** plug in, `powerprofilesctl set performance` (ASUS performance mode: higher CPU limits, faster fans), Dynamic Boost does the GPU. On battery the firmware caps power regardless.
 
-**Battery** (47.5 Wh design): NVIDIA asleep is the big win. Expect ~4–5 h coding at 144 Hz, ~5.5–6 h at 60 Hz + power-saver. Switch refresh: `kscreen-doctor output.eDP-1.mode.1920x1080@60`. External monitor: USB-C (AMD).
+**Battery** (47.5 Wh design): NVIDIA asleep is the big win. Expect ~4–5 h coding at 144 Hz, ~5.5–6 h at 60 Hz + power-saver. Switch refresh: `kscreen-doctor output.eDP-1.mode.1920x1080@60`. External monitor on battery: use USB-C (AMD), not HDMI (NVIDIA).
 
 **ASUS tools:** not needed. Power modes go through power-profiles-daemon, charge limit through Plasma, keyboard backlight through KDE. `asusctl` (in the Arch repos) is only for hand-tuning power limits (`nv_dynamic_boost`, PPT). If you add it, leave mode switching to power-profiles-daemon.
 

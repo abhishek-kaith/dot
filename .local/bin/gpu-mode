@@ -2,10 +2,11 @@
 # gpu-mode: turn an ASUS laptop's NVIDIA GPU off (eco) or on (hybrid), using the
 # firmware's own switch (asus-armoury dgpu_disable, = Armoury Crate "Eco").
 #   gpu-mode           show the current mode
-#   gpu-mode eco       NVIDIA GPU powered off: best battery. No prime-run or CUDA.
-#   gpu-mode hybrid    NVIDIA GPU available: prime-run, CUDA, NVENC.
-# Instant: no reboot or logout, because KWin never uses the NVIDIA GPU (see
-# ~/.setup/tuf-a15.sh). The firmware remembers the mode across boots.
+#   gpu-mode eco       NVIDIA GPU powered off: best battery. No prime-run, CUDA
+#                      or HDMI. The laptop panel and USB-C displays keep working.
+#   gpu-mode hybrid    NVIDIA GPU available: prime-run, CUDA, NVENC, HDMI.
+# Switches live, no reboot; the firmware remembers the setting across boots.
+# HDMI follows at the next login (KWin picks its GPUs at login).
 #
 # Why eco exists: on this laptop the firmware sends NVPCF ACPI notifications that
 # make the NVIDIA driver wake the idle GPU again within a second (NVIDIA
@@ -31,8 +32,9 @@ if [ "$want" = 1 ] && [ -e /sys/bus/pci/devices/0000:01:00.0 ]; then
     # under a loaded driver (the same order supergfxctl uses).
     sudo systemctl stop nvidia-powerd.service 2>/dev/null || true
     if sudo fuser -s /dev/nvidia[0-9]* /dev/nvidiactl 2>/dev/null; then
-        echo "The NVIDIA GPU is still in use; close these apps first:" >&2
+        echo "The NVIDIA GPU is still in use:" >&2
         sudo fuser -v /dev/nvidia[0-9]* /dev/nvidiactl >&2 || true
+        echo "Log out, switch to a console (Ctrl+Alt+F3), log in, run: gpu-mode eco" >&2
         exit 1
     fi
     sudo modprobe -r nvidia_drm nvidia_modeset nvidia_uvm nvidia
@@ -52,7 +54,7 @@ if [ "$want" = 0 ]; then
         sleep 1
     done
     sudo systemctl start nvidia-powerd.service 2>/dev/null || true
-    echo "hybrid: NVIDIA GPU on (prime-run, CUDA)"
+    echo "hybrid: NVIDIA GPU on (prime-run and CUDA now; HDMI after your next login)"
 else
     echo "eco: NVIDIA GPU off"
 fi
