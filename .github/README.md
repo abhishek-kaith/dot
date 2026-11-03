@@ -102,6 +102,7 @@ Everything is in plain lists. Edit them, re-run `install.sh`.
 | Screen recording | OBS Studio | ✓ | ✓ |
 | Photo gallery + quick edits | Shotwell (crop, straighten, enhance), Pinta (markup, resize) | ✓ | ✓ |
 | Phone screen on the laptop | scrcpy (Android, USB or Wi-Fi) | ✓ | ✓ |
+| Torrents | qBittorrent | ✓ | ✓ |
 | Files | | Dolphin | Nautilus |
 | Images | | Gwenview | Loupe |
 | PDF | | Okular | Papers |
