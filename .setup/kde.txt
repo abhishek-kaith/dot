@@ -4,7 +4,7 @@
 plasma-meta
 kdeconnect                    # phone link (ports 1714-1764 opened by install.sh)
 dolphin ark filelight partitionmanager
-okular gwenview kcalc
+okular gwenview kcalc kate
 ffmpegthumbs kdegraphics-thumbnailers   # video + PDF thumbnails in dolphin
 haruna                        # video player (mpv inside)
 elisa                         # music

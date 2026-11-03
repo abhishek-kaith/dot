@@ -106,6 +106,7 @@ Everything is in plain lists. Edit them, re-run `install.sh`.
 | Files | | Dolphin | Nautilus |
 | Images | | Gwenview | Loupe |
 | PDF | | Okular | Papers |
+| Text editor | | Kate | Text Editor |
 | Video | mpv | Haruna | Celluloid |
 | Music | | Elisa | Amberol |
 | Camera | | Kamoso | Snapshot |
