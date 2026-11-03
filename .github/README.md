@@ -100,7 +100,7 @@ Everything is in plain lists. Edit them, re-run `install.sh`.
 | Use | Pick | KDE | GNOME |
 |---|---|---|---|
 | Terminal | Ghostty (GPU) | ✓ | ✓ |
-| Browser | Zen (Flatpak, default) + Chromium | ✓ | ✓ |
+| Browser | Zen (Flatpak) + Chromium | ✓ | ✓ |
 | Passwords, SSH keys | Bitwarden | ✓ | ✓ |
 | 2FA codes (TOTP) | Ente Auth (Flatpak) | ✓ | ✓ |
 | Office | LibreOffice | ✓ | ✓ |
@@ -121,7 +121,7 @@ Everything is in plain lists. Edit them, re-run `install.sh`.
 
 The rule: the desktop's own app for files, images, PDFs and screenshots (it matches the theme and uses the GPU); my own pick only where it matters.
 
-**Browsers:** Zen (Flatpak, Firefox engine, set as the default by `install.sh`) and Chromium (pacman, also used by dev tools; see [Dev tools](#dev-tools-mise)). Both decode video on the AMD GPU (Chromium since 143, no flags; check `chrome://gpu`).
+**Browsers:** Zen (Flatpak, Firefox engine; pick the default browser in the desktop's settings) and Chromium (pacman, also used by dev tools; see [Dev tools](#dev-tools-mise)). Both decode video on the AMD GPU (Chromium since 143, no flags; check `chrome://gpu`).
 Autofill: the Bitwarden extension works in both, Flatpak or not, because it talks to Bitwarden's servers rather than to a local app.
 
 ### Passwords, 2FA, SSH
@@ -204,7 +204,6 @@ Rule of thumb: **pacman** for the system and CLI tools the shell needs, **mise**
 - **Login screen:** Plasma Login Manager (KDE) / GDM (GNOME). On KDE an existing SDDM is replaced: its leftover Xorg keeps the NVIDIA GPU awake.
 - **KDE:** KWallet on (app secrets), Ghostty as default terminal, `Meta+Return` opens Ghostty.
 - **Bitwarden** added to autostart (its SSH agent must be running).
-- **Zen** set as the default browser.
 - **GNOME:** `adw-gtk3` theme for GTK3 apps, `Super+Return` opens Ghostty.
 - **Shell:** login shell switched to zsh.
 - Then the machine script, `~/.setup/$(hostname).sh`.
