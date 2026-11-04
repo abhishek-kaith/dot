@@ -15,15 +15,37 @@ const counts = {};
 let added = [];
 let hidden = [];
 let floated = [];
+let tiledBefore = [];
+
+// Karousel also clears keepBelow on fullscreen and maximized windows, but they
+// stay in the row and return to their width, so they must keep counting as tiled.
+function isTiled(w) {
+    if (w.keepBelow) {
+        if (tiledBefore.indexOf(w) === -1) {
+            tiledBefore.push(w);
+        }
+        return true;
+    }
+    const area = workspace.clientArea(KWin.MaximizeArea, w);
+    const g = w.frameGeometry;
+    if (w.fullScreen || (g.width >= area.width - 2 && g.height >= area.height - 2)) {
+        return tiledBefore.indexOf(w) !== -1;
+    }
+    tiledBefore = tiledBefore.filter(function (other) { return other !== w; });
+    return false;
+}
 
 function tiledOn(desktop) {
     return workspace.windowList().filter(function (w) {
-        return w.normalWindow && w.keepBelow && !w.fullScreen && !w.minimized
+        return w.normalWindow && isTiled(w) && !w.minimized
             && w.desktops.indexOf(desktop) !== -1;
     });
 }
 
 function setWidth(w, width) {
+    if (!w.keepBelow) {
+        return; // fullscreen or maximized: Karousel restores its column width later
+    }
     const g = w.frameGeometry;
     w.frameGeometry = { x: g.x, y: g.y, width: width, height: g.height };
 }
@@ -33,6 +55,7 @@ function settle() {
         const open = workspace.windowList();
         function isOpen(w) { return open.indexOf(w) !== -1; }
         added = added.filter(isOpen); // windows may have closed during the wait
+        tiledBefore = tiledBefore.filter(isOpen);
         floated = floated.filter(isOpen);
         applyWidths();
     } finally {

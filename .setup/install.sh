@@ -261,6 +261,11 @@ if [ "$de" = kde ]; then
                 panel.height = 38;
                 panel.widgets().forEach(function (widget) {
                     if (widget.type == "org.kde.plasma.showdesktop") widget.remove();
+                    if (widget.type == "org.kde.plasma.digitalclock") {
+                        widget.currentConfigGroup = ["Appearance"];
+                        widget.writeConfig("showDate", false); // on hover and click instead
+                        widget.reloadConfig();
+                    }
                     if (widget.type == "org.kde.plasma.pager") {
                         widget.currentConfigGroup = ["General"];
                         widget.writeConfig("displayedText", "None");
