@@ -13,9 +13,6 @@ if [ ! -d "$HOME/.dotfiles" ]; then
     command git clone --bare "$repo" "$HOME/.dotfiles"
 fi
 git config status.showUntrackedFiles no
-# commits to this public repo use GitHub's private noreply address, not your real email
-git config user.name abhishek-kaith
-git config user.email 62424903+abhishek-kaith@users.noreply.github.com
 
 # Files the repo would overwrite are moved to ~/.dotfiles-backup first.
 if ! git checkout 2>/dev/null; then
