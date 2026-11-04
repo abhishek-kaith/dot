@@ -9,3 +9,5 @@ ffmpegthumbs kdegraphics-thumbnailers   # video + PDF thumbnails in dolphin
 haruna                        # video player (mpv inside)
 elisa                         # music
 kamoso                        # camera
+inter-font                    # UI font (system font set to Inter 10)
+papirus-icon-theme            # icons: Papirus-Dark

@@ -50,6 +50,21 @@ say "packages: common + $de"
 # shellcheck disable=SC2046  # word splitting is wanted: one word per package
 sudo pacman -S --needed $(list "$dir/common.txt" "$dir/$de.txt")
 
+# AUR packages (not checked by Arch: read each PKGBUILD before adding one).
+# yay-bin is built once with makepkg; afterwards `yay -Syu` updates and
+# rebuilds them with the rest of the system. git and base-devel come from common.txt.
+if [ -f "$dir/$de-aur.txt" ]; then
+    say "AUR: $de"
+    if ! command -v yay >/dev/null; then
+        tmp=$(mktemp -d)
+        git clone https://aur.archlinux.org/yay-bin.git "$tmp/yay-bin"
+        (cd "$tmp/yay-bin" && makepkg -si --noconfirm)
+        rm -rf "$tmp"
+    fi
+    # shellcheck disable=SC2046
+    yay -S --needed $(list "$dir/$de-aur.txt")
+fi
+
 say "flatpak"
 flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 if [ "$de" = kde ]; then theme=org.gtk.Gtk3theme.Breeze; else theme="org.gtk.Gtk3theme.adw-gtk3 org.gtk.Gtk3theme.adw-gtk3-dark"; fi
@@ -120,6 +135,40 @@ if [ "$de" = kde ]; then
     kwriteconfig6 --file kdeglobals --group General --key TerminalService com.mitchellh.ghostty.desktop
     kwriteconfig6 --file kglobalshortcutsrc --group services --group com.mitchellh.ghostty.desktop \
         --key _launch "Meta+Return"
+
+    # Look: Breeze Dark colors, Darkly app style and window borders, Inter, Papirus-Dark, Bibata.
+    kwriteconfig6 --file kdeglobals --group KDE --key LookAndFeelPackage org.kde.breezedark.desktop
+    kwriteconfig6 --file kdeglobals --group KDE --key widgetStyle Darkly
+    kwriteconfig6 --file kdeglobals --group KDE --key AnimationDurationFactor 0.5
+    kwriteconfig6 --file kdeglobals --group KDE --key ShowIconsInMenuItems false
+    kwriteconfig6 --file kdeglobals --group KDE --key ShowIconsOnPushButtons false
+    kwriteconfig6 --file kdeglobals --group KDE --key contrast 4
+    kwriteconfig6 --file kdeglobals --group KDE --key frameContrast 0.2
+    ui="Inter,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
+    kwriteconfig6 --file kdeglobals --group General --key font "$ui"
+    kwriteconfig6 --file kdeglobals --group General --key menuFont "$ui"
+    kwriteconfig6 --file kdeglobals --group General --key toolBarFont "$ui"
+    kwriteconfig6 --file kdeglobals --group General --key smallestReadableFont "Inter,8,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
+    kwriteconfig6 --file kdeglobals --group General --key fixed "JetBrainsMono Nerd Font,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
+    kwriteconfig6 --file kdeglobals --group WM --key activeFont "Inter,10,-1,5,600,0,0,0,0,0,0,0,0,0,0,1"
+    kwriteconfig6 --file kdeglobals --group General --key XftAntialias true
+    kwriteconfig6 --file kdeglobals --group General --key XftHintStyle hintslight
+    kwriteconfig6 --file kdeglobals --group General --key XftSubPixel rgb
+    kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key library org.kde.darkly
+    kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key theme Darkly
+    kwriteconfig6 --file darklyrc --group Common --key ShadowStrength 51
+    kwriteconfig6 --file darklyrc --group Windeco --key TitleAlignment AlignCenter
+    kwriteconfig6 --file darklyrc --group Style --key MenuOpacity 85
+    kwriteconfig6 --file darklyrc --group Style --key DolphinSidebarOpacity 85
+    # These need a running Plasma session.
+    if pgrep -x plasmashell >/dev/null; then
+        plasma-apply-colorscheme BreezeDark
+        plasma-apply-desktoptheme breeze-dark
+        plasma-apply-cursortheme Bibata-Modern-Ice
+        /usr/lib/plasma-changeicons Papirus-Dark
+    else
+        echo "!! not inside a Plasma session: log in once, then re-run '$0 kde' to finish the theme"
+    fi
 elif [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
     echo "!! not inside a GNOME session: log in once, then re-run '$0 gnome' to apply settings"
 else
