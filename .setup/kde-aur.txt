@@ -1,3 +1,4 @@
 # KDE look, from the AUR (installed by install.sh with yay). Sources:
 darkly-bin                    # app style + window borders   github.com/Bali10050/Darkly
 bibata-cursor-theme-bin       # cursor: Bibata Modern Ice    github.com/ful1e5/Bibata_Cursor
+kwin-karousel                 # scrolling windows            github.com/peterfajdiga/karousel
