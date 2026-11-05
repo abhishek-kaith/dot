@@ -7,6 +7,7 @@ node = "lts"
 pnpm = "latest"
 uv = "latest"
 claude = "latest"
+codex = "latest"
 
 [settings]
 auto_install = true
