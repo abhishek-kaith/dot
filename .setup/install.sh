@@ -221,11 +221,12 @@ if [ "$de" = kde ]; then
     kwin "Switch One Desktop Down" "Meta+Ctrl+Down${tab}Meta+Ctrl+J" "Switch One Desktop Down"
     kwin "Window One Desktop Up" "Meta+Ctrl+Shift+Up${tab}Meta+Ctrl+Shift+K" "Window One Desktop Up"
     kwin "Window One Desktop Down" "Meta+Ctrl+Shift+Down${tab}Meta+Ctrl+Shift+J" "Window One Desktop Down"
-    kwin karousel-cycle-preset-widths "Meta+R" "Karousel: Cycle through preset column widths"
-    kwin karousel-cycle-preset-widths-reverse "Meta+Shift+R" "Karousel: Cycle through preset column widths in reverse"
-    # Meta+M sets the column to full width, which stays when focus moves. KDE's maximize
-    # doesn't: Karousel drops it on focus loss, and reMaximize restores it on return.
-    kwin karousel-column-width-maximize "Meta+M" "Karousel: Increase column width to maximum"
+    kwin karousel-cycle-preset-widths none "Karousel: Cycle through preset column widths"
+    kwin karousel-cycle-preset-widths-reverse none "Karousel: Cycle through preset column widths in reverse"
+    # Meta+M (custom-widths script) toggles full width, which stays when focus moves. KDE's
+    # maximize doesn't: Karousel drops it on focus loss, and reMaximize restores it on return.
+    kwin karousel-column-width-maximize none "Karousel: Increase column width to maximum"
+    kwin custom-widths-toggle-full "Meta+M" "Custom Widths: Toggle full width"
     kwin "Window Close" "Alt+F4${tab}Meta+Q" "Close Window"
     kwin "Window Maximize" "Meta+PgUp" "Maximize Window"
     kwin "Window Fullscreen" "Meta+F" "Make Window Fullscreen"

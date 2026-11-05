@@ -1,6 +1,7 @@
 // Width rules for Karousel, per desktop: one tiled window fills the screen, a
 // second makes both 50%, and later windows open at 50% and scroll sideways.
-// Acts only when a desktop's tiled window count changes, so Meta+R still sticks.
+// Acts only when a desktop's tiled window count changes, so widths set by hand stick.
+// Meta+M switches a tiled window between full width and its previous width.
 // Karousel follows any width set here, and keeps tiled windows below the rest.
 // New windows stay invisible until sized, so they don't visibly snap.
 
@@ -16,6 +17,7 @@ let added = [];
 let hidden = [];
 let floated = [];
 let tiledBefore = [];
+const previousWidth = new Map();
 
 // Karousel also clears keepBelow on fullscreen and maximized windows, but they
 // stay in the row and return to their width, so they must keep counting as tiled.
@@ -182,9 +184,34 @@ workspace.windowAdded.connect(function (w) {
     added.push(w);
     timer.start();
 });
-workspace.windowRemoved.connect(function () {
+workspace.windowRemoved.connect(function (w) {
+    previousWidth.delete(w);
     timer.start();
 });
+
+function toggleFullWidth() {
+    const w = workspace.activeWindow;
+    if (!w || !w.normalWindow || w.fullScreen) {
+        return;
+    }
+    const area = workspace.clientArea(KWin.MaximizeArea, w);
+    const g = w.frameGeometry;
+    if (!w.keepBelow) { // floating, or tiled and maximized: an ordinary maximize toggle
+        const filled = g.width >= area.width - 2 && g.height >= area.height - 2;
+        w.setMaximize(!filled, !filled);
+        return;
+    }
+    const full = area.width - 2 * GAP;
+    if (g.width >= full - 2) {
+        setWidth(w, previousWidth.get(w) || Math.floor((full - GAP) / 2));
+        previousWidth.delete(w);
+    } else {
+        previousWidth.set(w, g.width);
+        setWidth(w, full);
+    }
+}
+
+registerShortcut("custom-widths-toggle-full", "Custom Widths: Toggle full width", "Meta+M", toggleFullWidth);
 
 workspace.windowList().forEach(function (w) {
     if (w.normalWindow) {
