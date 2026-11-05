@@ -144,6 +144,7 @@ if [ "$de" = kde ]; then
     kwriteconfig6 --file kdeglobals --group KDE --key ShowIconsOnPushButtons false
     kwriteconfig6 --file kdeglobals --group KDE --key contrast 4
     kwriteconfig6 --file kdeglobals --group KDE --key frameContrast 0.2
+    kwriteconfig6 --file kdeglobals --group General --key accentColorFromWallpaper true
     ui="Inter,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
     kwriteconfig6 --file kdeglobals --group General --key font "$ui"
     kwriteconfig6 --file kdeglobals --group General --key menuFont "$ui"
@@ -167,6 +168,15 @@ if [ "$de" = kde ]; then
     kwriteconfig6 --file kwinrc --group Plugins --key custom-widthsEnabled true
     # Karousel moves windows instantly; this effect animates those moves.
     kwriteconfig6 --file kwinrc --group Plugins --key kwin4_effect_geometry_changeEnabled true
+    # Center the focused window with whichever neighbours fully fit.
+    kwriteconfig6 --file kwinrc --group Script-karousel --key scrollingLazy false
+    kwriteconfig6 --file kwinrc --group Script-karousel --key scrollingGrouped true
+    # Dim inactive windows slightly (KDE's default strength is 25). Translucency makes
+    # windows 80% opaque while dragged; sheet slides attached dialogs in and out.
+    kwriteconfig6 --file kwinrc --group Plugins --key diminactiveEnabled true
+    kwriteconfig6 --file kwinrc --group Plugins --key translucencyEnabled true
+    kwriteconfig6 --file kwinrc --group Plugins --key sheetEnabled true
+    kwriteconfig6 --file kwinrc --group Effect-diminactive --key Strength 12
     kwriteconfig6 --file kwinrc --group Desktops --key Number 5
     # One desktop per row: KDE's touchpad swipe for desktops then runs up and down,
     # leaving three-finger left and right for Karousel to scroll windows.
