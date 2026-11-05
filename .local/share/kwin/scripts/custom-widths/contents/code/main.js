@@ -133,6 +133,19 @@ function shrinkFloating(w, dragged) {
     w.frameGeometry = { x: Math.round(left), y: Math.round(top), width: width, height: height };
 }
 
+// Shrink as a drag starts, not when it ends. Karousel sets a floating window's size
+// right after clearing keepBelow, so this has to run once it has finished.
+let justDragged = null;
+const dragTimer = new QTimer();
+dragTimer.singleShot = true;
+dragTimer.interval = 0;
+dragTimer.timeout.connect(function () {
+    if (justDragged && justDragged.move) {
+        shrinkFloating(justDragged, true);
+    }
+    justDragged = null;
+});
+
 function watch(w) {
     function changed() {
         added.push(w);
@@ -144,6 +157,10 @@ function watch(w) {
         if (!w.keepBelow) {
             floated.push(w);
             draggedOut = w.move;
+            if (draggedOut) {
+                justDragged = w;
+                dragTimer.start();
+            }
         }
         changed(); // Karousel has just tiled or floated it
     });

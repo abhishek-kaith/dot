@@ -165,6 +165,8 @@ if [ "$de" = kde ]; then
     # (in ~/.local/share/kwin/scripts) makes one window full width, two 50/50, then scrolls.
     kwriteconfig6 --file kwinrc --group Plugins --key karouselEnabled true
     kwriteconfig6 --file kwinrc --group Plugins --key custom-widthsEnabled true
+    # Karousel moves windows instantly; this effect animates those moves.
+    kwriteconfig6 --file kwinrc --group Plugins --key kwin4_effect_geometry_changeEnabled true
     kwriteconfig6 --file kwinrc --group Desktops --key Number 5
     # One desktop per row: KDE's touchpad swipe for desktops then runs up and down,
     # leaving three-finger left and right for Karousel to scroll windows.

@@ -2,3 +2,4 @@
 darkly-bin                    # app style + window borders   github.com/Bali10050/Darkly
 bibata-cursor-theme-bin       # cursor: Bibata Modern Ice    github.com/ful1e5/Bibata_Cursor
 kwin-karousel                 # scrolling windows            github.com/peterfajdiga/karousel
+kwin-effects-geometry-change  # animates Karousel's moves    github.com/peterfajdiga/kwin4_effect_geometry_change
