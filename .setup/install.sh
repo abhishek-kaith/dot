@@ -194,6 +194,8 @@ if [ "$de" = niri ]; then
 
     systemctl --user daemon-reload
     systemctl --user enable noctalia.service
+    # Ghostty runs windowless from login, so every new window opens instantly.
+    systemctl --user enable app-com.mitchellh.ghostty.service
 
     # GTK look (Noctalia adds the wallpaper colors).
     if [ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
