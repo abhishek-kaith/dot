@@ -14,7 +14,11 @@ niri_overview_type_to_launch_enabled = true   # type in niri's overview to searc
 # Noctalia doesn't close them. Needs noctalia.service (it is).
 launch_apps_as_systemd_services = true
 
+# Spotlight-like: just the search box and results (no avatar, power or gear).
 [shell.launcher]
+layout = "simple"
+show_settings_button = false
+show_session_button = false
 pinned = ["ghostty", "app.zen_browser.zen", "org.gnome.Nautilus"]
 
 # ── Look: colors from the wallpaper ─────────────────────────────────────────
@@ -77,7 +81,8 @@ transparency_mode = "soft"           # solid | soft | glass
 
 # ── Bar: thin, translucent and blurred, full width along the top ────────────
 # GNOME/macOS layout: workspaces + app on the left, date and time in the middle,
-# icon-only status on the right; the rest is in the control center (Mod+S).
+# icon-only status on the right (click one: its page in the control center).
+# Control center: Mod+S. Settings: Mod+Shift+Comma. Power menu: Mod+Shift+E.
 
 [bar.main]
 position = "top"
@@ -85,15 +90,15 @@ thickness = 28
 radius = 0
 margin_ends = 0
 margin_edge = 0
-padding = 10
-widget_spacing = 8
+padding = 8
+widget_spacing = 6
 background_opacity = 0.72            # see-through, so niri can blur behind it
 compositor_blur = true
 shadow = false
 capsule = false
 start = ["workspaces", "app"]
 center = ["clock"]
-end = ["media", "tray", "notifications", "wifi", "bluetooth", "volume", "battery", "settings"]
+end = ["media", "tray", "notifications", "wifi", "bluetooth", "volume", "battery"]
 
 # Square workspace buttons with their number; the active one is filled.
 [widget.workspaces]
@@ -141,15 +146,7 @@ display_mode = "glyph"               # same size as the other icons
 show_label = true
 label_content = "percent"
 
-# One gear instead of the control-center and power buttons. Left click: settings;
-# right click: control center (also Mod+S). Power menu: Mod+Shift+E.
-[widget.settings]
-type = "settings"
-
-[widget.settings.actions]
-right = "panel-toggle control-center"
-
-# Control center (Mod+S, or right-click the gear): the toggles that left the bar.
+# Control center (Mod+S): the toggles that left the bar.
 [control_center]
 show_shortcut_labels = true
 

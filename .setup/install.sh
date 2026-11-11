@@ -216,6 +216,17 @@ if [ "$de" = niri ]; then
         echo "!! no desktop session: log in once, then re-run '$0 niri' for the GTK settings"
     fi
 
+    # Default apps (KDE had left folders opening in Amberol and PDFs in Zen).
+    xdg-mime default org.gnome.Nautilus.desktop inode/directory
+    xdg-mime default org.gnome.Papers.desktop application/pdf
+    xdg-mime default org.gnome.Loupe.desktop image/png image/jpeg image/webp \
+        image/gif image/avif image/jxl image/heic image/bmp image/tiff image/svg+xml
+    xdg-mime default org.gnome.TextEditor.desktop text/plain text/markdown
+    xdg-mime default org.gnome.Showtime.desktop video/mp4 video/x-matroska video/webm \
+        video/quicktime video/x-msvideo
+    xdg-mime default org.gnome.Decibels.desktop audio/mpeg audio/flac audio/ogg \
+        audio/x-wav audio/mp4 audio/opus
+
     # Qt look (qt6ct): Noctalia writes colors/noctalia.conf on every wallpaper
     # change. Only a starting config; qt6ct's own window edits it afterwards.
     if [ ! -e "$HOME/.config/qt6ct/qt6ct.conf" ]; then

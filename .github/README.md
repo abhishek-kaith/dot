@@ -258,7 +258,7 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 
 **Colors from the wallpaper:** pick a wallpaper (bar or launcher `/wall`) and Noctalia recolors itself, niri's borders, GTK, Qt (qt6ct), Ghostty and btop. Change the style with `wallpaper_scheme` in `config.toml`.
 
-**Bar:** thin, translucent and blurred, along the top. Left: workspaces (numbered squares) and the focused app; middle: date and time; right: tray, notifications, Wi-Fi, Bluetooth, volume, battery (icons only), control center, power. Everything else is in the **control center** (`Mod+S`): Wi-Fi, Bluetooth, Dark Mode, power profile, Night Light, Do Not Disturb, and the Power tab's battery limit.
+**Bar:** thin, translucent and blurred, along the top. Left: workspaces (numbered squares) and the focused app; middle: date and time; right: tray, notifications, Wi-Fi, Bluetooth, volume, battery (icons only; click one for its page in the control center). Everything else is in the **control center** (`Mod+S`): Wi-Fi, Bluetooth, Dark Mode, power profile, Night Light, Do Not Disturb, and the Power tab's battery limit.
 
 **Dark and light:** the control center's Dark Mode (or `noctalia msg theme-mode-toggle`) switches the colors **and the wallpaper**. Each mode has its own folder, `~/Pictures/Wallpapers/Dark` and `Light` (not tracked). Defaults, downloaded by `install.sh niri` from [Wallhaven](https://wallhaven.cc): dark [`5y3q31`](https://wallhaven.cc/w/5y3q31) (Milky Way over a mountain lake), light [`e89l8k`](https://wallhaven.cc/w/e89l8k) (clouds). Add your own images to the folders (more nature ones: [wallhaven.cc/search?q=nature](https://wallhaven.cc/search?q=nature&categories=100&purity=100&atleast=1920x1080&sorting=toplist)) and pick with the launcher's `/wall`. No plugins: Noctalia's plugin catalogue auto-update is off (`[plugins]` in `config.toml`). The wallpaper you pick in a mode is remembered for that mode (`~/.local/bin/wallpaper-mode`, run by Noctalia's `theme_mode_changed` hook).
 
@@ -267,18 +267,23 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 | Key | Does |
 |---|---|
 | `Mod+Return` / `Mod+B` / `Mod+E` | Ghostty / Zen / Files |
-| `Mod+D` or `Mod+Space`, `Mod+S`, `Mod+V` | launcher, control center, clipboard history |
+| `Mod+D` or `Mod+Space`, `Mod+S`, `Mod+V` | launcher (Spotlight-style search), control center, clipboard history |
+| `Mod+Shift+Comma`, `Mod+Shift+W`, `Mod+Shift+D` | Noctalia settings, wallpaper picker, dark/light |
+| `Mod+Semicolon`, `Mod+Shift+N` | emoji picker, Do Not Disturb |
 | `Mod+H/L`, `Mod+J/K` | focus column; focus window, running on into the next workspace |
 | `Mod+Shift+H/J/K/L` | move column; move window (into the next workspace at the edge) |
 | `Mod+Ctrl+J/K`, `Mod+Ctrl+Shift+J/K` | go to workspace below/above; take the column along |
 | `Mod+1..9`, `Mod+Shift+1..9` | go to workspace; move column there |
 | `Mod+Alt+H/J/K/L` (+Shift) | focus monitor (move column there) |
 | `Mod+F`, `Mod+Shift+F`, `Mod+R`, `Mod+-/=` | full width, fullscreen, cycle widths, narrower/wider |
-| `Mod+W`, `Mod+[ / ]`, `Mod+C` | tabbed column, merge into / split out of a column, center |
+| `Mod+W` | tabbed column on/off (a column with 2+ windows shows them as tabs; press again for the stacked view) |
+| `Mod+[ / ]`, `Mod+Comma / Period`, `Mod+C` | move a window into / out of the column on the left/right, merge into / split out of this column, center |
 | `Mod+Shift+Space` | float / tile |
 | `Mod+O`, `Alt+Tab` | overview, recent windows |
 | `Print` or `Mod+Shift+S` | screenshot (pick area, window or screen) |
-| `Mod+Q`, `Ctrl+Alt+L`, `Mod+Shift+E` | close, lock, log out |
+| `Mod+Q`, `Ctrl+Alt+L`, `Mod+Shift+E` | close, lock, power menu (log out, suspend, reboot, shut down) |
+
+**Default apps:** Nautilus, Papers, Loupe, Text Editor, Showtime, Decibels (set by `install.sh niri` with `xdg-mime`). **File dialogs** come from the GTK portal (`~/.config/xdg-desktop-portal/niri-portals.conf`): the GNOME one starts Nautilus first and is slow.
 
 **Secrets:** gnome-keyring, unlocked at login by the login screen's PAM module (added to greetd's by `install.sh niri`).
 
