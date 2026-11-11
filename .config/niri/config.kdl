@@ -107,7 +107,7 @@ overview {
 // ── window rules ────────────────────────────────────────────────────────────
 
 // Password apps never show up in screen sharing or automatic screenshots.
-// niri's own interactive screenshot (Print) still shows them, on purpose.
+// niri's own interactive screenshot (Mod+P, Print) still shows them, on purpose.
 window-rule {
     match app-id="^Bitwarden$"
     match app-id=r#"^io\.ente\.auth$"#
@@ -176,23 +176,21 @@ binds {
     Mod+B      hotkey-overlay-title="Browser: Zen" { spawn "flatpak" "run" "app.zen_browser.zen"; }
     Mod+E      hotkey-overlay-title="Files" { spawn "nautilus" "--new-window"; }
 
-    // Noctalia
-    Mod+D      hotkey-overlay-title="Launcher" { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
-    Mod+Space  hotkey-overlay-title=null { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
-    Mod+S      hotkey-overlay-title="Control center" { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
-    Mod+V      hotkey-overlay-title="Clipboard history" { spawn "noctalia" "msg" "panel-toggle" "clipboard"; }
-    // Same keys as Windows / macOS where niri doesn't use them already:
-    // Win+I settings, Win+A quick settings, Win+N notifications, Win+V clipboard,
-    // Win+; emoji, Win+Shift+S screenshot, Win+E files, Cmd+Space search.
-    Mod+I      hotkey-overlay-title="Settings" { spawn "noctalia" "msg" "settings-toggle"; }
-    Mod+Shift+Comma hotkey-overlay-title=null { spawn "noctalia" "msg" "settings-toggle"; }
-    Mod+A      hotkey-overlay-title="Control center" { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
-    Mod+N      hotkey-overlay-title="Notifications" { spawn "noctalia" "msg" "panel-toggle" "control-center" "notifications"; }
-    Mod+Semicolon hotkey-overlay-title="Emoji" { spawn "noctalia" "msg" "panel-toggle" "launcher" "/emo"; }
-    Mod+Shift+W hotkey-overlay-title="Wallpaper picker" { spawn "noctalia" "msg" "panel-toggle" "wallpaper"; }
-    Mod+Shift+D hotkey-overlay-title="Dark / light" { spawn "noctalia" "msg" "theme-mode-toggle"; }
-    Mod+Shift+N hotkey-overlay-title="Do not disturb" { spawn "noctalia" "msg" "notification-dnd-toggle"; }
-    Ctrl+Alt+L hotkey-overlay-title="Lock" { spawn "noctalia" "msg" "session" "lock"; }
+    // System: macOS keys where niri leaves them free (Cmd = Mod):
+    // Cmd+Space search, Cmd+Q close, Ctrl+Cmd+Q lock, Ctrl+Cmd+Space emoji,
+    // Cmd+Shift+, settings (Cmd+, is niri's merge-into-column).
+    Mod+Space        hotkey-overlay-title="Search" { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
+    Mod+D            hotkey-overlay-title=null { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
+    Mod+Ctrl+Space   hotkey-overlay-title="Emoji" { spawn "noctalia" "msg" "panel-toggle" "launcher" "/emo"; }
+    Mod+Ctrl+Q       hotkey-overlay-title="Lock" { spawn "noctalia" "msg" "session" "lock"; }
+    Mod+Shift+Comma  hotkey-overlay-title="Settings" { spawn "noctalia" "msg" "settings-toggle"; }
+    Mod+S            hotkey-overlay-title="Control center" { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
+    Mod+N            hotkey-overlay-title="Notifications" { spawn "noctalia" "msg" "panel-toggle" "control-center" "notifications"; }
+    Mod+V            hotkey-overlay-title="Clipboard history" { spawn "noctalia" "msg" "panel-toggle" "clipboard"; }
+    Mod+P            hotkey-overlay-title="Screenshot" { screenshot; }
+    Mod+Shift+W      hotkey-overlay-title="Wallpaper picker" { spawn "noctalia" "msg" "panel-toggle" "wallpaper"; }
+    Mod+Shift+D      hotkey-overlay-title="Dark / light" { spawn "noctalia" "msg" "theme-mode-toggle"; }
+    Mod+Shift+N      hotkey-overlay-title="Do not disturb" { spawn "noctalia" "msg" "notification-dnd-toggle"; }
 
     XF86AudioRaiseVolume allow-when-locked=true { spawn "noctalia" "msg" "volume-up"; }
     XF86AudioLowerVolume allow-when-locked=true { spawn "noctalia" "msg" "volume-down"; }
@@ -208,7 +206,6 @@ binds {
 
     // windows
     Mod+Q       repeat=false { close-window; }
-    Mod+Shift+Q repeat=false { close-window; }
     Alt+F4      repeat=false { close-window; }
     Mod+O       repeat=false { toggle-overview; }
 
@@ -314,18 +311,16 @@ binds {
 
     // floating
     Mod+Shift+Space { toggle-window-floating; }
-    Mod+Ctrl+Space  { switch-focus-between-floating-and-tiling; }
+    Mod+Alt+Space   { switch-focus-between-floating-and-tiling; }
 
     // screenshots: niri's own UI (password windows stay hidden from the automatic ones)
     Print       { screenshot; }
-    Mod+Shift+S { screenshot; }
     Ctrl+Print  { screenshot-screen; }
     Alt+Print   { screenshot-window; }
 
     // session
     Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
     Mod+Shift+E hotkey-overlay-title="Power menu" { spawn "noctalia" "msg" "panel-toggle" "session"; }
-    Ctrl+Alt+Delete hotkey-overlay-title=null { spawn "noctalia" "msg" "panel-toggle" "session"; }
     Mod+Shift+P { power-off-monitors; }
 }
 

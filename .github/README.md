@@ -262,15 +262,15 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 
 **Dark and light:** the control center's Dark Mode (or `noctalia msg theme-mode-toggle`) switches the colors **and the wallpaper**. Each mode has its own folder, `~/Pictures/Wallpapers/Dark` and `Light` (not tracked). Defaults, downloaded by `install.sh niri` from [Wallhaven](https://wallhaven.cc): dark [`5y3q31`](https://wallhaven.cc/w/5y3q31) (Milky Way over a mountain lake), light [`e89l8k`](https://wallhaven.cc/w/e89l8k) (clouds). Add your own images to the folders (more nature ones: [wallhaven.cc/search?q=nature](https://wallhaven.cc/search?q=nature&categories=100&purity=100&atleast=1920x1080&sorting=toplist)) and pick with the launcher's `/wall`. No plugins: Noctalia's plugin catalogue auto-update is off (`[plugins]` in `config.toml`). The wallpaper you pick in a mode is remembered for that mode (`~/.local/bin/wallpaper-mode`, run by Noctalia's `theme_mode_changed` hook).
 
-**Keys** (`Mod+Shift+/` shows them all). Shift moves, Ctrl is workspaces, Alt is monitors; arrows work like H/J/K/L.
+**Keys** (`Mod+Shift+/` shows them all). System actions use macOS keys where niri leaves them free (Mod = Cmd); windows use the i3/Hyprland tiling layout: Shift moves, Ctrl is workspaces, Alt is monitors, arrows work like H/J/K/L.
 
 | Key | Does |
 |---|---|
 | `Mod+Return` / `Mod+B` / `Mod+E` | Ghostty / Zen / Files |
-| `Mod+D` or `Mod+Space`, `Mod+S`, `Mod+V` | launcher (Spotlight-style search), control center, clipboard history |
-| `Mod+I`, `Mod+A` (or `Mod+S`), `Mod+N` | settings, control center, notifications (as Win+I / Win+A / Win+N) |
+| `Mod+Space` (or `Mod+D`), `Mod+S`, `Mod+N`, `Mod+V` | search, control center, notifications, clipboard history |
+| `Mod+Shift+Comma`, `Mod+Ctrl+Space`, `Mod+Ctrl+Q` | settings, emoji, lock (as Cmd+, / Ctrl+Cmd+Space / Ctrl+Cmd+Q on macOS) |
 | `Mod+Shift+W`, `Mod+Shift+D` | wallpaper picker, dark/light |
-| `Mod+Semicolon`, `Mod+Shift+N` | emoji picker, Do Not Disturb |
+| `Mod+Shift+N` | Do Not Disturb |
 | `Mod+H/L`, `Mod+J/K` | focus column; focus window, running on into the next workspace |
 | `Mod+Shift+H/J/K/L` | move column; move window (into the next workspace at the edge) |
 | `Mod+Ctrl+J/K`, `Mod+Ctrl+Shift+J/K` | go to workspace below/above; take the column along |
@@ -279,16 +279,16 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 | `Mod+F`, `Mod+Shift+F`, `Mod+R`, `Mod+-/=` | full width, fullscreen, cycle widths, narrower/wider |
 | `Mod+W` | tabbed column on/off (a column with 2+ windows shows them as tabs; press again for the stacked view) |
 | `Mod+[ / ]`, `Mod+Comma / Period`, `Mod+C` | move a window into / out of the column on the left/right, merge into / split out of this column, center |
-| `Mod+Shift+Space` | float / tile |
+| `Mod+Shift+Space`, `Mod+Alt+Space` | float / tile, focus between floating and tiled |
 | `Mod+O`, `Alt+Tab` | overview, recent windows |
-| `Print` or `Mod+Shift+S` | screenshot (pick area, window or screen) |
-| `Mod+Q`, `Ctrl+Alt+L`, `Mod+Shift+E` or `Ctrl+Alt+Delete` | close, lock, power menu (log out, suspend, reboot, shut down) |
+| `Mod+P` or `Print` | screenshot (pick area, window or screen); `Ctrl+Print` whole screen, `Alt+Print` window |
+| `Mod+Q`, `Mod+Shift+E` | close, power menu (log out, suspend, reboot, shut down) |
 
 **Default apps:** Nautilus, Papers, Loupe, Text Editor, Showtime, Decibels (set by `install.sh niri` with `xdg-mime`). **File dialogs** come from the GTK portal (`~/.config/xdg-desktop-portal/niri-portals.conf`): the GNOME one starts Nautilus first and is slow.
 
 **Secrets:** gnome-keyring. With autologin (default) it starts locked and asks for your password once per boot, the first time an app needs a secret (Bitwarden, right after login). Through the login screen, the password typed there unlocks it (PAM, added to greetd's by `install.sh niri`).
 
-**Night Light:** on, 4000 K from 19:30 to 07:00, fading over an hour (`[nightlight]` and `[location]` in `config.toml`; fixed times, no location lookup). Control center button: on/off; right-click: warm all the time.
+**Night Light:** three states from its control center button: **off**, **scheduled** (left-click; 4000 K from 19:30 to 07:00, fading over an hour) and **always on** (right-click). Times: `[location]` in `config.toml` (fixed, no location lookup).
 
 **Password apps** (Bitwarden, Ente Auth, KeePassXC) are black in screen sharing and automatic screenshots; notifications are hidden from screen sharing.
 
