@@ -17,6 +17,7 @@ launch_apps_as_systemd_services = true
 # Spotlight-like: just the search box and results (no avatar, power or gear).
 [shell.launcher]
 layout = "simple"
+category_icons_only = true           # the simple layout is 560 px wide: labels didn't fit
 show_settings_button = false
 show_session_button = false
 pinned = ["ghostty", "app.zen_browser.zen", "org.gnome.Nautilus"]

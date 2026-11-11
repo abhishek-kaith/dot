@@ -139,6 +139,16 @@ window-rule {
     default-window-height { fixed 920; }
 }
 
+// Frosted glass behind Noctalia's bar, panels (launcher, control center, ...),
+// notifications and OSD, instead of see-through text. xray (on with blur):
+// the blur shows the wallpaper, computed once, so it's cheap.
+layer-rule {
+    match namespace="^noctalia-(bar-.+|panel|notification|osd)$"
+    background-effect {
+        blur true
+    }
+}
+
 // Noctalia's blurred wallpaper sits behind the workspaces in the overview
 // (Noctalia docs, niri page; [backdrop] in ~/.config/noctalia/config.toml).
 layer-rule {
