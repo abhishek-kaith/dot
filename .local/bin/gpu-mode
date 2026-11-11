@@ -57,7 +57,11 @@ if [ "$want" = 0 ] && [ -e "$pending" ]; then
     sudo rm -f "$pending"
     echo "eco at the next boot: cancelled"
 fi
-[ "$cur" = "$want" ] && { echo "already $1"; exit 0; }
+gpu_present() { [ -e /sys/bus/pci/devices/0000:01:00.0 ]; }
+# Half-done hybrid (firmware on, GPU not found again): finish it below.
+if [ "$cur" = "$want" ] && ! { [ "$want" = 0 ] && ! gpu_present; }; then
+    echo "already $1"; exit 0
+fi
 
 if [ "$want" = 1 ] && [ -e /sys/bus/pci/devices/0000:01:00.0 ]; then
     if sudo fuser -s /dev/nvidia[0-9]* /dev/nvidiactl 2>/dev/null; then
@@ -77,7 +81,16 @@ if [ "$want" = 1 ] && [ -e /sys/bus/pci/devices/0000:01:00.0 ]; then
     done
 fi
 
-echo "$want" | sudo tee "$attr/current_value" >/dev/null
+# The firmware can report an error and switch anyway (asus_armoury: "Failed to
+# set current_value" with hybrid now on). Trust what it reads back.
+if [ "$cur" != "$want" ] && ! echo "$want" | sudo tee "$attr/current_value" >/dev/null 2>&1; then
+    sleep 1
+    if [ "$(cat "$attr/current_value")" != "$want" ]; then
+        echo "!! the firmware refused the switch (journalctl -k | grep armoury)" >&2
+        exit 1
+    fi
+    echo "(the firmware reported an error but did switch; carrying on)"
+fi
 
 if [ "$want" = 0 ]; then
     # Power is back: find the GPU on the bus again; udev loads the driver.
