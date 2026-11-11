@@ -1,7 +1,4 @@
-# niri (scrolling tiling) + Noctalia v5 shell, with GNOME apps. All from Arch's
-# repos: no AUR. Config: ~/.config/niri, ~/.config/noctalia.
-# Login screen: greetd + noctalia-greeter; gnome-keyring is unlocked at login
-# by its PAM module (added to /etc/pam.d/greetd by install.sh).
+# niri + Noctalia, with GNOME apps. All from Arch's repos.
 
 niri                          # compositor; Alt+Tab, overview and screenshots built in
 noctalia                      # bar, launcher, notifications, lock, idle, polkit, wallpaper
@@ -14,7 +11,7 @@ playerctl                     # media keys
 libnotify                     # notify-send, for scripts
 system-config-printer         # printers
 
-# look: GTK and Qt both follow the wallpaper colors through Noctalia templates
+# look
 adw-gtk-theme                 # GTK3 apps match libadwaita
 qt6ct                         # Qt apps: colors, font, icons
 inter-font                    # UI font

@@ -1,10 +1,5 @@
-// niri 26.04: scrolling tiling. Shared by every machine; per-machine screens,
-// GPU and refresh rate live in hosts/<hostname>.kdl, linked to host.kdl by
-// ~/.setup/install.sh niri. Check after editing: niri validate
-// Docs: https://github.com/YaLTeR/niri/wiki (pick the 26.04 version)
-//
-// The shell (bar, launcher, notifications, lock, idle, polkit, wallpaper) is
-// Noctalia, started by ~/.config/systemd/user/noctalia.service.
+// niri 26.04, shared by every machine (per-machine: hosts/<hostname>.kdl).
+// Check: niri validate. Shell: Noctalia (noctalia.service).
 
 input {
     keyboard {
@@ -19,12 +14,10 @@ input {
         natural-scroll
         dwt                     // ignore the touchpad while typing
     }
-    // Moving the mouse onto a window does not focus it; clicking does.
-    warp-mouse-to-focus         // keyboard focus moves bring the pointer along
+    warp-mouse-to-focus         // the pointer follows keyboard focus
 }
 
 layout {
-    // Small even gaps, square corners, thin border: the bar sits flat on top.
     gaps 6
     center-focused-column "never"
     background-color "transparent"
@@ -42,7 +35,7 @@ layout {
     }
     border {
         width 2
-        // Colors come from the wallpaper: noctalia.kdl (included below).
+        // colors: noctalia.kdl (wallpaper)
         active-color "#7fc8ff"
         inactive-color "#303030"
         urgent-color "#cc3333"
@@ -55,7 +48,7 @@ layout {
     }
 }
 
-// Apps draw no title bars of their own (GTK apps follow this): flat windows.
+// no client-side title bars
 prefer-no-csd
 
 cursor {
@@ -64,9 +57,7 @@ cursor {
     hide-when-typing
 }
 
-// Started by niri for apps it spawns (keybinds). The same values are pushed to
-// the systemd user manager for the niri session only, so apps started from
-// Noctalia get them too (~/.config/systemd/user/niri.service.d/session-env.conf).
+// Also set for Noctalia-launched apps: systemd/user/niri.service.d/session-env.conf
 environment {
     QT_QPA_PLATFORMTHEME "qt6ct"
 }
@@ -77,7 +68,7 @@ hotkey-overlay {
 
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 
-// Quicker than niri's defaults; movement keeps a slight spring.
+// Quicker than the defaults, with a slight spring.
 animations {
     slowdown 0.75
     window-open {
@@ -105,8 +96,7 @@ overview {
 
 // ── window rules ────────────────────────────────────────────────────────────
 
-// Password apps never show up in screen sharing or automatic screenshots.
-// niri's own interactive screenshot (Mod+P, Print) still shows them, on purpose.
+// Password apps: black in screen sharing and automatic screenshots.
 window-rule {
     match app-id="^Bitwarden$"
     match app-id=r#"^io\.ente\.auth$"#
@@ -121,7 +111,7 @@ window-rule {
     default-floating-position x=24 y=24 relative-to="bottom-right"
 }
 
-// Small helper windows float instead of taking a column.
+// Small helper windows float.
 window-rule {
     match app-id=r#"^pinentry"#
     match app-id=r#"^org\.gnome\.Calculator$"#
@@ -130,7 +120,7 @@ window-rule {
     open-floating true
 }
 
-// Noctalia's settings window (Noctalia docs, niri page).
+// Noctalia's settings window.
 window-rule {
     match app-id=r#"^dev\.noctalia\.Noctalia$"#
     open-floating true
@@ -138,9 +128,8 @@ window-rule {
     default-window-height { fixed 920; }
 }
 
-// Frosted glass behind Noctalia's bar, panels (launcher, control center, ...),
-// notifications and OSD, instead of see-through text. xray (on with blur):
-// the blur shows the wallpaper, computed once, so it's cheap.
+// Blur behind Noctalia's bar, panels, notifications and OSD (blurs the
+// wallpaper only, computed once: cheap).
 layer-rule {
     match namespace="^noctalia-(bar-.+|panel|notification|osd)$"
     background-effect {
@@ -148,23 +137,21 @@ layer-rule {
     }
 }
 
-// Noctalia's blurred wallpaper sits behind the workspaces in the overview
-// (Noctalia docs, niri page; [backdrop] in ~/.config/noctalia/config.toml).
+// Blurred wallpaper behind the overview ([backdrop] in Noctalia's config).
 layer-rule {
     match namespace="^noctalia-backdrop"
     place-within-backdrop true
 }
 
-// Notifications can carry OTP codes: keep them out of screen sharing.
+// Notifications (OTP codes) hidden from screen sharing.
 layer-rule {
     match namespace="^noctalia-notification"
     block-out-from "screencast"
 }
 
 // ── keys ────────────────────────────────────────────────────────────────────
-// i3/sway style with Vim keys; arrows do the same as H/J/K/L.
-// Shift = move, Ctrl = workspaces, Alt = monitors.  Mod+Shift+/ lists all keys.
-// Alt+Tab / Mod+Tab: niri's own recent-windows switcher (on by default).
+// Windows: i3 style with Vim keys (Shift = move, Ctrl = workspaces, Alt =
+// monitors). System: macOS keys where free. Alt+Tab is niri's built-in.
 
 binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
@@ -175,9 +162,7 @@ binds {
     Mod+B      hotkey-overlay-title="Browser: Zen" { spawn "flatpak" "run" "app.zen_browser.zen"; }
     Mod+E      hotkey-overlay-title="Files" { spawn "nautilus" "--new-window"; }
 
-    // System: macOS keys where niri leaves them free (Cmd = Mod):
-    // Cmd+Space search, Cmd+Q close, Ctrl+Cmd+Q lock, Ctrl+Cmd+Space emoji,
-    // Cmd+Shift+, settings (Cmd+, is niri's merge-into-column).
+    // system
     Mod+Space        hotkey-overlay-title="Search" { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
     Mod+D            hotkey-overlay-title=null { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
     Mod+Ctrl+Space   hotkey-overlay-title="Emoji" { spawn "noctalia" "msg" "panel-toggle" "launcher" "/emo"; }
@@ -208,7 +193,7 @@ binds {
     Alt+F4      repeat=false { close-window; }
     Mod+O       repeat=false { toggle-overview; }
 
-    // focus: H/L columns; J/K windows, running on into the next workspace
+    // focus (J/K run on into the next workspace)
     Mod+H     { focus-column-left; }
     Mod+L     { focus-column-right; }
     Mod+J     { focus-window-or-workspace-down; }
@@ -232,7 +217,7 @@ binds {
     Mod+Shift+Home  { move-column-to-first; }
     Mod+Shift+End   { move-column-to-last; }
 
-    // workspaces (Ctrl): straight up/down, and Ctrl+Shift takes the column along
+    // workspaces (Ctrl; +Shift takes the column)
     Mod+Ctrl+J          { focus-workspace-down; }
     Mod+Ctrl+K          { focus-workspace-up; }
     Mod+Ctrl+Down       { focus-workspace-down; }
@@ -312,7 +297,7 @@ binds {
     Mod+Shift+Space { toggle-window-floating; }
     Mod+Alt+Space   { switch-focus-between-floating-and-tiling; }
 
-    // screenshots: niri's own UI (password windows stay hidden from the automatic ones)
+    // screenshots
     Print       { screenshot; }
     Ctrl+Print  { screenshot-screen; }
     Alt+Print   { screenshot-window; }
@@ -323,10 +308,8 @@ binds {
     Mod+Shift+P { power-off-monitors; }
 }
 
-// Wallpaper colors for borders, tabs and Alt+Tab, written by Noctalia.
-// Generated, not tracked: missing until Noctalia first runs.
+// Wallpaper colors, written by Noctalia (not tracked).
 include optional=true "noctalia.kdl"
 
-// This machine's screens and GPU: a link to hosts/<hostname>.kdl.
-// Last, so it can override anything above.
+// This machine (link to hosts/<hostname>.kdl); last, so it overrides.
 include optional=true "host.kdl"

@@ -1,15 +1,7 @@
 #!/bin/sh
-# wallpaper-mode: a dark and a light wallpaper that follow Noctalia's theme mode.
-# Noctalia runs this on every dark/light switch (hooks.theme_mode_changed in
-# ~/.config/noctalia/config.toml); it passes the modes in NOCTALIA_THEME_MODE
-# and NOCTALIA_THEME_MODE_PREVIOUS.
-#
-# The wallpaper you had is remembered for the mode you left, and the one last
-# used in the new mode comes back. The defaults are set by install.sh niri
-# (~/.local/state/wallpaper-mode/{dark,light}); without one, the first image in
-# ~/Pictures/Wallpapers/{Dark,Light} is used.
-#   wallpaper-mode            what Noctalia calls
-#   wallpaper-mode dark|light apply that mode's wallpaper by hand
+# wallpaper-mode [dark|light]: switch to that mode's wallpaper. Noctalia runs it
+# on every dark/light switch (theme_mode_changed hook). Remembers the last pick
+# per mode in ~/.local/state/wallpaper-mode/.
 set -eu
 
 new=${1:-${NOCTALIA_THEME_MODE:-}}

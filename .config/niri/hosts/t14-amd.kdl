@@ -1,10 +1,4 @@
-// Lenovo ThinkPad T14 Gen 1 AMD. Linked as ../host.kdl on this machine by
-// ~/.setup/install.sh.
-//
-// To fill in on the first niri login: `niri msg outputs` shows the panel name,
-// its modes and whether it supports VRR. Until then niri's defaults apply
-// (highest refresh rate, automatic scale).
-//
+// t14-amd: fill in from `niri msg outputs` on the first login.
 // output "eDP-1" {
 //     mode "1920x1080"
 //     scale 1

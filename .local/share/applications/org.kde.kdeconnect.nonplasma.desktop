@@ -1,5 +1,5 @@
 [Desktop Entry]
-# Hidden from the launcher (it still autostarts to the tray). Override of the system file.
+# Hidden from the launcher; still autostarts.
 NoDisplay=true
 Name=KDE Connect Indicator
 Name[ar]=مؤشر «جسر كِيدِي»

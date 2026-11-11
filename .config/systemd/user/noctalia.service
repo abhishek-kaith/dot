@@ -1,10 +1,5 @@
-# Noctalia shell for the niri session only (not in other desktops).
-# Based on the user service in Noctalia's docs ("Noctalia systemd user service");
-# Noctalia 5.4.1 doesn't ship the file yet. Type=simple: 5.4.1's notify support
-# isn't confirmed, so readiness isn't waited for.
-# Running as a unit lets launch_apps_as_systemd_services put each app in its own
-# cgroup, and systemd restarts the bar if it crashes.
-# Enabled by ~/.setup/install.sh niri.
+# Noctalia for the niri session (from Noctalia's docs; 5.4.1 doesn't ship it).
+# Restarts on crash; lets launched apps get their own cgroup.
 [Unit]
 Description=Noctalia shell
 Documentation=https://docs.noctalia.dev/noctalia/compositor-settings/systemd-service/

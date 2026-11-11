@@ -1,23 +1,9 @@
 #!/bin/sh
-# gpu-mode: turn an ASUS laptop's NVIDIA GPU off (eco) or on (hybrid), using the
-# firmware's own switch (asus-armoury dgpu_disable, = Armoury Crate "Eco").
-#   gpu-mode           show the current mode
-#   gpu-mode eco       NVIDIA GPU powered off: best battery. No prime-run, CUDA
-#                      or HDMI. The laptop panel and USB-C displays keep working.
-#   gpu-mode hybrid    NVIDIA GPU on: prime-run, CUDA, NVENC, and HDMI in niri.
-#   gpu-mode hdmi off|auto
-#                      niri: never use the NVIDIA GPU (no HDMI, but eco always
-#                      switches at once), or use it whenever it's on (default).
-#                      Takes effect at the next login.
-#
-# hybrid switches at once. eco switches at once unless something has the GPU
-# open, which niri does in hybrid (for HDMI, as KWin did): then it's scheduled
-# and done at the next boot, before the login screen (gpu-mode-boot.service,
-# installed by ~/.setup/tuf-a15.sh). The firmware remembers the mode.
-#
-# Why eco exists: on this laptop the firmware sends NVPCF ACPI notifications that
-# make the NVIDIA driver wake the idle GPU again within a second (NVIDIA
-# open-gpu-kernel-modules issue #1300), so in hybrid it never really sleeps.
+# gpu-mode [eco|hybrid|hdmi off|auto]: the ASUS firmware's NVIDIA switch.
+#   eco     GPU off (best battery; no CUDA/HDMI). If the GPU is in use (niri,
+#           for HDMI), it's done at the next boot by gpu-mode-boot.service.
+#   hybrid  GPU on at once.   hdmi off|auto: niri never/also uses it (next login).
+# Why: in hybrid this firmware never lets the GPU sleep (open-gpu-kernel-modules #1300).
 set -eu
 
 attr=/sys/class/firmware-attributes/asus-armoury/attributes/dgpu_disable
@@ -25,7 +11,7 @@ attr=/sys/class/firmware-attributes/asus-armoury/attributes/dgpu_disable
 cur=$(cat "$attr/current_value")
 pending=/var/lib/gpu-mode/pending
 
-# niri's HDMI choice: ~/.config/niri/nvidia.kdl, included by hosts/tuf-a15.kdl.
+# niri's HDMI choice, included by hosts/tuf-a15.kdl.
 nvidia_kdl="${XDG_CONFIG_HOME:-$HOME/.config}/niri/nvidia.kdl"
 if [ "${1:-}" = hdmi ]; then
     case ${2:-} in
@@ -58,7 +44,7 @@ if [ "$want" = 0 ] && [ -e "$pending" ]; then
     echo "eco at the next boot: cancelled"
 fi
 gpu_present() { [ -e /sys/bus/pci/devices/0000:01:00.0 ]; }
-# Half-done hybrid (firmware on, GPU not found again): finish it below.
+# Half-done hybrid (on, but not rescanned): finish it.
 if [ "$cur" = "$want" ] && ! { [ "$want" = 0 ] && ! gpu_present; }; then
     echo "already $1"; exit 0
 fi
@@ -72,8 +58,7 @@ if [ "$want" = 1 ] && [ -e /sys/bus/pci/devices/0000:01:00.0 ]; then
         echo "gpu-mode hybrid cancels it."
         exit 0
     fi
-    # Detach the GPU from its driver first, so the firmware never cuts power
-    # under a loaded driver (the same order supergfxctl uses).
+    # Unload the driver first (as supergfxctl does).
     sudo systemctl stop nvidia-powerd.service 2>/dev/null || true
     sudo modprobe -r nvidia_drm nvidia_modeset nvidia_uvm nvidia
     for dev in /sys/bus/pci/devices/0000:01:00.*; do
@@ -81,8 +66,7 @@ if [ "$want" = 1 ] && [ -e /sys/bus/pci/devices/0000:01:00.0 ]; then
     done
 fi
 
-# The firmware can report an error and switch anyway (asus_armoury: "Failed to
-# set current_value" with hybrid now on). Trust what it reads back.
+# The firmware may report an error yet switch: trust the read-back.
 if [ "$cur" != "$want" ] && ! echo "$want" | sudo tee "$attr/current_value" >/dev/null 2>&1; then
     sleep 1
     if [ "$(cat "$attr/current_value")" != "$want" ]; then
@@ -93,7 +77,7 @@ if [ "$cur" != "$want" ] && ! echo "$want" | sudo tee "$attr/current_value" >/de
 fi
 
 if [ "$want" = 0 ]; then
-    # Power is back: find the GPU on the bus again; udev loads the driver.
+    # Rescan; udev loads the driver.
     sleep 1
     echo 1 | sudo tee /sys/bus/pci/rescan >/dev/null
     for _ in 1 2 3 4 5 6 7 8 9 10; do

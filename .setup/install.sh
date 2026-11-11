@@ -1,14 +1,11 @@
 #!/bin/sh
-# Set up this machine after a minimal archinstall.
-#   ~/.setup/install.sh niri      or      ~/.setup/install.sh gnome
-# (KDE Plasma: the `kde` branch of the dotfiles repo.)
-# Safe to re-run: every step skips what is already done.
+# Set up this machine after a minimal archinstall: install.sh niri|gnome
+# (KDE: the `kde` branch). Safe to re-run.
 set -eu
 
 de=${1:-}
 case $de in
     gnome) dm=gdm.service ;;
-    # niri: greetd + Noctalia's greeter (set up below, under "services").
     niri) dm=greetd.service ;;
     *) echo "usage: $0 niri|gnome" >&2; exit 1 ;;
 esac
@@ -20,10 +17,8 @@ rebuild=0
 say() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
 list() { sed 's/#.*//' "$@" | tr -s ' \t' '\n' | grep -v '^$'; }
 
-# Add a kernel option to /etc/kernel/cmdline, which mkinitcpio bakes into the
-# unified kernel image; the image is rebuilt once at the end. Safe to repeat:
-# an option already present is skipped. The untouched original is kept as
-# /etc/kernel/cmdline.orig. Undo: remove the word, then `sudo mkinitcpio -P`.
+# Append a kernel option to /etc/kernel/cmdline (unified kernel image; rebuilt
+# once at the end). Skips duplicates; keeps cmdline.orig.
 kernel_param() {
     if [ ! -f /etc/kernel/cmdline ]; then
         echo "!! no /etc/kernel/cmdline: add '$1' to your boot entry by hand"
@@ -37,7 +32,7 @@ kernel_param() {
     rebuild=1
 }
 
-# Let TRIM through LUKS2, stored in the header (Arch wiki: dm-crypt/Specialties).
+# TRIM through LUKS2, stored in the header.
 luks_discard() {
     name=$1
     dev=$(sudo cryptsetup status "$name" 2>/dev/null | awk '$1 == "device:" {print $2}')
@@ -52,9 +47,7 @@ say "packages: common + $de"
 # shellcheck disable=SC2046  # word splitting is wanted: one word per package
 sudo pacman -S --needed $(list "$dir/common.txt" "$dir/$de.txt")
 
-# AUR packages (not checked by Arch: read each PKGBUILD before adding one).
-# yay-bin is built once with makepkg; afterwards `yay -Syu` updates and
-# rebuilds them with the rest of the system. git and base-devel come from common.txt.
+# AUR (read each PKGBUILD before adding one); yay-bin is built once with makepkg.
 if [ -f "$dir/$de-aur.txt" ]; then
     say "AUR: $de"
     if ! command -v yay >/dev/null; then
@@ -73,8 +66,7 @@ theme="org.gtk.Gtk3theme.adw-gtk3 org.gtk.Gtk3theme.adw-gtk3-dark"
 # shellcheck disable=SC2046,SC2086
 flatpak install --user --noninteractive flathub $(list "$dir/flatpak.txt") $theme
 
-# qBittorrent: fixed port 51413 (allowed in ufw below). Only a starting config;
-# never overwrites one that exists.
+# qBittorrent starting config (port 51413); never overwrites.
 [ -e "$HOME/.config/qBittorrent/qBittorrent.conf" ] ||
     install -Dm600 "$dir/qBittorrent.conf" "$HOME/.config/qBittorrent/qBittorrent.conf"
 
@@ -93,9 +85,7 @@ EOF
 sudo sysctl -q --system
 
 say "systemd-oomd (kill the app using too much memory before the system freezes)"
-# Fedora's defaults (package systemd-oomd-defaults): kill under sustained memory
-# pressure in user sessions, or when swap (zram) is nearly full. It kills one
-# cgroup: an app started from niri or Noctalia, not the whole session.
+# Fedora's defaults: kill the app under memory pressure or with zram nearly full.
 sudo mkdir -p /etc/systemd/system/user@.service.d /etc/systemd/system/-.slice.d
 printf '[Service]\nManagedOOMMemoryPressure=kill\nManagedOOMMemoryPressureLimit=50%%\n' |
     sudo tee /etc/systemd/system/user@.service.d/10-oomd.conf >/dev/null
@@ -110,14 +100,9 @@ luks_discard "${root#/dev/mapper/}"
 say "services"
 sudo systemctl enable --now bluetooth.service cups.socket fstrim.timer paccache.timer reflector.timer
 
-# niri's login screen: greetd runs Noctalia's greeter (noctalia-greeter docs,
-# "Installation"). Arch's greetd PAM file has no gnome-keyring line, so it is
-# added: the login password then unlocks the keyring.
+# niri's login screen: greetd + Noctalia's greeter, keyring unlock in its PAM.
 if [ "$de" = niri ]; then
-    # Autologin: greetd starts niri for $USER once per boot, with no password
-    # (the disk password at boot is the gate). Logging out shows the greeter.
-    # gnome-keyring then starts locked and asks for your password once, the
-    # first time an app needs a secret. No autologin: autologin=no ./install.sh niri
+    # Autologin once per boot (the keyring then asks once). Off: autologin=no
     cmd=/usr/bin/noctalia-greeter-session
     want="# Written by ~/.setup/install.sh niri (original: config.toml.orig).
 [terminal]
@@ -149,8 +134,7 @@ user = \"$USER\""
     sudo noctalia-greeter-apply-appearance --setup-system
 fi
 
-# Keep a login screen that is already set up; only enable one on a fresh install.
-# niri replaces any other one with greetd. Both switches apply at the next boot.
+# Enable the login screen on a fresh install; niri swaps any other for greetd.
 current=$(readlink /etc/systemd/system/display-manager.service 2>/dev/null || true)
 if [ -z "$current" ]; then
     sudo systemctl enable "$dm"
@@ -161,7 +145,7 @@ elif [ "$de" = niri ] && [ "${current##*/}" != "$dm" ]; then
 fi
 systemctl --user enable --now podman.socket
 
-# Bitwarden starts at login (to the tray), so its SSH agent is always there.
+# Bitwarden at login, for its SSH agent.
 mkdir -p "$HOME/.config/autostart"
 for f in /usr/share/applications/bitwarden*.desktop; do
     if [ -f "$f" ] && [ ! -e "$HOME/.config/autostart/${f##*/}" ]; then
@@ -180,8 +164,6 @@ sudo systemctl enable ufw.service
 
 say "desktop settings: $de"
 if [ "$de" = niri ]; then
-    # Config is in the dotfiles (~/.config/niri, ~/.config/noctalia); this links
-    # this machine's screen/GPU file and turns on the session services.
     if [ -f "$HOME/.config/niri/hosts/$host.kdl" ]; then
         ln -sfn "hosts/$host.kdl" "$HOME/.config/niri/host.kdl"
         echo "  niri: host.kdl -> hosts/$host.kdl"
@@ -192,10 +174,7 @@ if [ "$de" = niri ]; then
     noctalia config validate
     mkdir -p "$HOME/Pictures/Screenshots"
 
-    # Wallpapers: a nature default per mode, from Wallhaven. If a download
-    # fails, Noctalia shows its own wallpaper; nothing else depends on these.
-    #   Dark:  5y3q31, Milky Way over a mountain lake (Unsplash photo)
-    #   Light: e89l8k, clouds on a blue sky
+    # Default wallpaper per mode, from Wallhaven (on failure: Noctalia's own).
     get_wallpaper() {
         [ -s "$2" ] && return 0
         mkdir -p "${2%/*}"
@@ -204,17 +183,16 @@ if [ "$de" = niri ]; then
     w="$HOME/Pictures/Wallpapers"
     get_wallpaper https://w.wallhaven.cc/full/5y/wallhaven-5y3q31.jpg "$w/Dark/wallhaven-5y3q31.jpg"
     get_wallpaper https://w.wallhaven.cc/full/e8/wallhaven-e89l8k.jpg "$w/Light/wallhaven-e89l8k.jpg"
-    # Defaults for ~/.local/bin/wallpaper-mode; your later picks replace them.
+    # wallpaper-mode's defaults; your picks replace them.
     state="$HOME/.local/state/wallpaper-mode"
     mkdir -p "$state"
     [ -s "$state/dark" ] || echo "$w/Dark/wallhaven-5y3q31.jpg" >"$state/dark"
     [ -s "$state/light" ] || echo "$w/Light/wallhaven-e89l8k.jpg" >"$state/light"
 
-    # Noctalia runs as a user service started with niri (not in other desktops).
     systemctl --user daemon-reload
     systemctl --user enable noctalia.service
 
-    # GTK look; Noctalia adds the wallpaper colors on top (gtk.css import).
+    # GTK look (Noctalia adds the wallpaper colors).
     if [ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
         gsettings set org.gnome.desktop.interface gtk-theme adw-gtk3-dark
         gsettings set org.gnome.desktop.interface color-scheme prefer-dark
@@ -227,7 +205,7 @@ if [ "$de" = niri ]; then
         echo "!! no desktop session: log in once, then re-run '$0 niri' for the GTK settings"
     fi
 
-    # Default apps (KDE had left folders opening in Amberol and PDFs in Zen).
+    # Default apps.
     xdg-mime default org.gnome.Nautilus.desktop inode/directory
     xdg-mime default org.gnome.Papers.desktop application/pdf
     xdg-mime default org.gnome.Loupe.desktop image/png image/jpeg image/webp \
@@ -238,8 +216,7 @@ if [ "$de" = niri ]; then
     xdg-mime default org.gnome.Decibels.desktop audio/mpeg audio/flac audio/ogg \
         audio/x-wav audio/mp4 audio/opus
 
-    # Qt look (qt6ct): Noctalia writes colors/noctalia.conf on every wallpaper
-    # change. Only a starting config; qt6ct's own window edits it afterwards.
+    # Qt look (qt6ct); starting config only.
     if [ ! -e "$HOME/.config/qt6ct/qt6ct.conf" ]; then
         mkdir -p "$HOME/.config/qt6ct"
         cat > "$HOME/.config/qt6ct/qt6ct.conf" <<EOF
@@ -276,10 +253,8 @@ else
     say "no $host.sh: skipping machine-specific setup"
 fi
 
-# Battery charge limit, through UPower: works in every desktop and is switched
-# in Noctalia's control center > Power > Battery charging. The machine's
-# script may set charge_limit; 90 otherwise. Charging restarts 5% below it
-# (only on batteries that support a start point, like the T14's).
+# Battery charge limit (UPower; toggled in Noctalia's Power tab). A machine
+# script may set charge_limit (default 90); charging restarts 5% below.
 charge_limit=${charge_limit:-90}
 if ls /sys/class/power_supply/*/charge_control_end_threshold >/dev/null 2>&1; then
     say "battery: stop charging at $charge_limit%"
@@ -293,8 +268,7 @@ if ls /sys/class/power_supply/*/charge_control_end_threshold >/dev/null 2>&1; th
         sudo udevadm settle
         sudo systemctl restart upower.service
         sleep 2
-        # New or changed limit: turn it on (UPower). Turning it off later in
-        # Noctalia is kept: this only runs when the limit changes.
+        # Only when the limit changes, so turning it off later sticks.
         for dev in $(upower -e | grep '/battery_BAT'); do
             busctl --system call org.freedesktop.UPower "$dev" \
                 org.freedesktop.UPower.Device EnableChargeThreshold b true || true

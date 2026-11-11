@@ -1,25 +1,21 @@
-# Noctalia 5.4.1 (Arch extra). Hand-written settings, tracked in the dotfiles.
-# Changes made in the Settings window go to ~/.local/state/noctalia/settings.toml
-# instead (not tracked) and win over this file; copy keepers back here.
-# Check after editing: noctalia config validate
-# Every default, with comments: /usr/share/doc/noctalia or github.com/noctalia-dev/noctalia/blob/v5.4.1/example.toml
+# Noctalia 5.4.1. Check: noctalia config validate. Defaults: example.toml at
+# github.com/noctalia-dev/noctalia/blob/v5.4.1. The Settings window writes to
+# ~/.local/state/noctalia/settings.toml (wins over this file; not tracked).
 
 [shell]
 font_family = "Inter"
 corner_radius_scale = 0.5            # 0 square ... 1 default; matches the square windows
 polkit_agent = true                  # password prompts for pacman GUIs, disks, etc.
 niri_overview_type_to_launch_enabled = true   # type in niri's overview to search apps
-# Apps started from the launcher, dock or taskbar run as their own systemd services:
-# systemd-oomd then kills only the app using too much memory, and restarting
-# Noctalia doesn't close them. Needs noctalia.service (it is).
+# Each launched app gets its own systemd service (oomd kills only it).
+# Needs Noctalia to run as noctalia.service.
 launch_apps_as_systemd_services = true
 
-# Spotlight-like: just the search box and results (no avatar, power or gear).
-# Login screen (noctalia-greeter) follows the wallpaper, colors and font
-# whenever they change. Avatar: ~/.face, via AccountsService.
+# Login screen follows the wallpaper, colors and font. Avatar: ~/.face.
 [shell.greeter_sync]
 auto_sync = true
 
+# Spotlight-like: search box and results only.
 [shell.launcher]
 layout = "simple"
 category_icons_only = true           # the simple layout is 560 px wide: labels didn't fit
@@ -36,8 +32,8 @@ wallpaper_scheme = "m3-content"      # m3-tonal-spot | m3-content | vibrant | fa
 pure_black_dark = true               # true black background
 
 [theme.templates]
-# Recolored on every wallpaper change. Ghostty uses the user template below,
-# so Noctalia never edits the tracked ghostty config.
+# Recolored with the wallpaper. Ghostty uses a user template so the tracked
+# ghostty config is never edited.
 builtin_ids = ["niri", "gtk3", "gtk4", "qt", "btop"]
 enable_community_templates = false
 
@@ -46,11 +42,8 @@ input_path = "templates/ghostty-colors"
 output_path = "~/.config/ghostty/noctalia-colors"   # read via `config-file = ?noctalia-colors`
 post_hook = "bash /usr/share/noctalia/assets/templates/ghostty/reload.sh"
 
-# Dark and light wallpapers: one folder each (not tracked), with a nature default
-# downloaded by install.sh niri. Switching dark/light (control center's Dark Mode,
-# or `noctalia msg theme-mode-toggle`) swaps the wallpaper too, through the hook
-# below; the one you pick in each mode is remembered (~/.local/bin/wallpaper-mode).
-# Add your own images to the folders; pick one with the launcher's /wall.
+# One folder per mode (defaults downloaded by install.sh niri). Dark/light
+# swaps the wallpaper via the hook below (~/.local/bin/wallpaper-mode).
 [wallpaper]
 directory = "~/Pictures/Wallpapers"
 directory_dark = "~/Pictures/Wallpapers/Dark"
@@ -65,16 +58,13 @@ path = "~/Pictures/Wallpapers/Dark/wallhaven-5y3q31.jpg"
 [hooks]
 theme_mode_changed = "wallpaper-mode"
 
-# niri's overview shows the wallpaper blurred behind the workspaces
-# (with the place-within-backdrop layer rule in ~/.config/niri/config.kdl).
+# Blurred wallpaper behind niri's overview (layer rule in niri's config).
 [backdrop]
 enabled = true
 blur_intensity = 0.6
 tint_intensity = 0.25
 
-# No plugins in use: don't keep fetching the plugin catalogues (git) in the
-# background (that stalled the shell for ~18 s once). Settings > Plugins still
-# works; update a source there by hand.
+# No plugins; don't fetch the catalogues in the background (it stalled the shell).
 [plugins]
 enabled = []
 auto_update = "none"
@@ -85,10 +75,7 @@ speed = 1.4                          # UI animations 40% faster (1.0 = default)
 [shell.panel]
 transparency_mode = "soft"           # solid | soft | glass
 
-# ── Bar: thin, translucent and blurred, full width along the top ────────────
-# GNOME/macOS layout: workspaces + app on the left, date and time in the middle,
-# icon-only status on the right (click one: its page in the control center).
-# Control center: Mod+S. Settings: Mod+Shift+Comma. Power menu: Mod+Shift+E.
+# ── Bar: thin, translucent, blurred; status icons open the control center ──
 
 [bar.main]
 position = "top"
@@ -106,7 +93,7 @@ start = ["workspaces", "app"]
 center = ["clock"]
 end = ["media", "tray", "notifications", "wifi", "bluetooth", "volume", "brightness", "battery"]
 
-# Square workspace buttons with their number; the active one is filled.
+# Square numbered workspaces.
 [widget.workspaces]
 type = "workspaces"
 style = "regular"
@@ -148,16 +135,14 @@ show_label = false
 type = "brightness"
 show_label = false
 
-# Battery: icon + percent. The 90% limit: control center > Power > Battery
-# charging (built into Noctalia; UPower).
+# Battery limit (90%): control center > Power.
 [widget.battery]
 type = "battery"
 display_mode = "glyph"               # same size as the other icons
 show_label = true
 label_content = "percent"
 
-# Control center (Mod+S / Mod+A) home buttons, 6 at most. Wi-Fi and Bluetooth
-# are on the bar already. Caffeine = never sleep / lock until turned off.
+# Control center home buttons (6 at most). Caffeine = never sleep.
 [control_center]
 show_shortcut_labels = true
 
@@ -179,9 +164,8 @@ type = "notification"
 [[control_center.shortcuts]]
 type = "mic_mute"
 
-# ── Night Light: warmer screen in the evening ───────────────────────────────
-# Fixed times (no location lookup); the change fades over an hour around each.
-# Control center button: on/off; right-click it: warm all the time.
+# ── Night Light: scheduled (fixed times, no location lookup) ───────────────
+# Its button: left-click on/off, right-click always on.
 [nightlight]
 enabled = true
 temperature_night = 4000             # Kelvin; lower = warmer
@@ -192,7 +176,7 @@ custom_schedule = true
 sunset = "19:30"
 sunrise = "07:00"
 
-# ── Lock and idle (both off by default in Noctalia) ─────────────────────────
+# ── Idle (Caffeine and playing video hold these off) ────────────────────────
 
 [idle.behavior.lock]
 enabled = true
@@ -204,9 +188,7 @@ enabled = true
 timeout = 660                        # screen off a minute later
 action = "screen_off"
 
-# Suspend after 30 min idle, on battery only (plugged in it stays awake).
-# Locks first (lockscreen.lock_before_suspend). Caffeine in the control
-# center, and apps playing video, hold all of these off.
+# Suspend after 30 min, on battery only (locks first).
 [idle.behavior.suspend-on-battery]
 enabled = true
 timeout = 1800

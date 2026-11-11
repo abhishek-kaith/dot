@@ -1,11 +1,7 @@
-# ASUS TUF Gaming A15 (FA506NCG): Ryzen 7 7445HS + Radeon 740M, RTX 3050 Laptop.
-# Sourced by install.sh (uses its kernel_param and say helpers).
-# Hybrid graphics: the panel and USB-C are on the AMD GPU, HDMI on the NVIDIA one.
-# `gpu-mode eco|hybrid` (~/.local/bin) turns the NVIDIA GPU off/on in firmware.
+# ASUS TUF Gaming A15 (Radeon 740M + RTX 3050). Sourced by install.sh.
 
 say "NVIDIA driver + prime-run + nvtop"
-# nvidia-open is built for the stock `linux` kernel only. Any other kernel
-# (linux-zen, linux-lts, ...) needs nvidia-open-dkms plus that kernel's headers.
+# nvidia-open fits the stock kernel only; others need -dkms + headers.
 kernels=$(pacman -Qq linux linux-zen linux-lts linux-hardened 2>/dev/null || true)
 if [ "$kernels" = linux ]; then
     nvdriver=nvidia-open
@@ -15,31 +11,23 @@ fi
 # shellcheck disable=SC2086  # one word per package
 sudo pacman -S --needed $nvdriver nvidia-utils nvidia-prime nvtop
 
-# libva-nvidia-driver makes browsers decode video on the NVIDIA GPU and keeps it
-# awake (~12 W at idle). The AMD GPU decodes everything this laptop needs.
+# libva-nvidia-driver keeps the GPU awake (~12 W); AMD decodes video fine.
 if pacman -Q libva-nvidia-driver >/dev/null 2>&1; then
     say "removing libva-nvidia-driver"
     sudo pacman -Rns libva-nvidia-driver
 fi
 
-# Brightness: the kernel picks nvidia_wmi_ec_backlight and skips amdgpu's, so
-# the slider changes nothing (Arch wiki: Backlight, acpi_backlight=native).
+# Brightness: use amdgpu's backlight, not nvidia_wmi_ec_backlight.
 kernel_param acpi_backlight=native
 
-# Render on the AMD GPU, not the NVIDIA one (else ~13 W more at idle): one line
-# in ~/.config/niri/hosts/tuf-a15.kdl (render-drm-device). In hybrid niri also
-# opens the NVIDIA GPU, only for the HDMI port (as KWin did).
-
-# `gpu-mode eco` while niri (or anything) has the NVIDIA GPU open is scheduled:
-# this runs it at the next boot, before the login screen, when nothing holds the
-# GPU. Root-owned copy of just the eco steps from ~/.local/bin/gpu-mode, so root
-# never runs a file from $HOME.
+# A `gpu-mode eco` scheduled while the GPU was in use runs at the next boot,
+# before the login screen. Root-owned copy of the eco steps (root never runs
+# files from $HOME).
 say "gpu-mode: eco at boot when scheduled"
 sudo mkdir -p /usr/local/lib /var/lib/gpu-mode
 sudo tee /usr/local/lib/gpu-mode-boot >/dev/null <<'EOF'
 #!/bin/sh
-# Written by ~/.setup/tuf-a15.sh. Run by gpu-mode-boot.service when
-# /var/lib/gpu-mode/pending exists (`gpu-mode eco` while the GPU was in use).
+# Written by ~/.setup/tuf-a15.sh; run by gpu-mode-boot.service.
 set -eu
 attr=/sys/class/firmware-attributes/asus-armoury/attributes/dgpu_disable
 rm -f /var/lib/gpu-mode/pending
@@ -72,16 +60,11 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl enable gpu-mode-boot.service
 
-# Dynamic Boost: lets the GPU go from 60 W up to 95 W on AC by borrowing CPU
-# budget. Does nothing on battery. Skipped quietly in gpu-mode eco (no GPU).
+# Dynamic Boost (GPU 60 -> 95 W on AC); skipped in eco.
 sudo mkdir -p /etc/systemd/system/nvidia-powerd.service.d
 printf '[Unit]\nConditionPathExists=/sys/bus/pci/devices/0000:01:00.0\n' |
     sudo tee /etc/systemd/system/nvidia-powerd.service.d/only-with-gpu.conf >/dev/null
 sudo systemctl daemon-reload
 sudo systemctl enable nvidia-powerd.service
 
-# NOT needed (driver 595+, Arch wiki NVIDIA/Tips and tricks): nvidia-suspend,
-# nvidia-resume and nvidia-hibernate stay disabled; the driver saves video
-# memory itself. Runtime D3 (GPU off when idle) is on by default, but on this
-# laptop the firmware's NVPCF notifications wake the GPU again within a second
-# (NVIDIA open-gpu-kernel-modules #1300). Hence gpu-mode eco for battery days.
+# Not needed (driver 595+): nvidia-suspend/resume/hibernate stay disabled.

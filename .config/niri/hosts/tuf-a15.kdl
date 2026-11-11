@@ -1,25 +1,16 @@
-// ASUS TUF Gaming A15: Radeon 740M drives the panel and USB-C, the RTX 3050
-// drives HDMI. Linked as ../host.kdl on this machine by ~/.setup/install.sh.
+// tuf-a15: panel + USB-C on the Radeon 740M, HDMI on the RTX 3050.
 
-// Laptop panel: 1920x1080, 48-144 Hz (EDID). No refresh given = the highest.
-// VRR: refresh follows content, 144 Hz while things move, down to 48 Hz idle.
-// If the panel flickers near 48 Hz, use `variable-refresh-rate on-demand=true`
-// and a `variable-refresh-rate true` window rule for games and video only.
+// 48-144 Hz panel with VRR (flicker? use `variable-refresh-rate on-demand=true`).
 output "eDP-1" {
     mode "1920x1080"
     scale 1
     variable-refresh-rate
 }
 
-// Render on the AMD iGPU, not the NVIDIA one (else ~13 W more at idle).
-// by-path follows the PCI address, so it cannot swap like renderD128/129.
-// 0000:05:00.0 = Radeon 740M, 0000:01:00.0 = RTX 3050.
+// Render on AMD (05:00.0), not NVIDIA (01:00.0): ~13 W less at idle.
 debug {
     render-drm-device "/dev/dri/by-path/pci-0000:05:00.0-render"
 }
 
-// NVIDIA GPU: in hybrid niri opens it for the HDMI port (as KWin did); in eco
-// it's gone. `gpu-mode hdmi off` makes niri never open it (../nvidia.kdl, not
-// tracked): no HDMI, but eco then always switches at once. `gpu-mode hdmi auto`
-// undoes that. Both from the next login.
+// Written by `gpu-mode hdmi off|auto` (not tracked).
 include optional=true "nvidia.kdl"
