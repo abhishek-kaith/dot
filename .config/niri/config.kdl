@@ -51,7 +51,6 @@ layout {
         off
     }
     tab-indicator {
-        hide-when-single-tab
         place-within-column
     }
 }
