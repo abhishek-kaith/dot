@@ -258,7 +258,9 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 
 **Colors from the wallpaper:** pick a wallpaper (bar or launcher `/wall`) and Noctalia recolors itself, niri's borders, GTK, Qt (qt6ct), Ghostty and btop. Change the style with `wallpaper_scheme` in `config.toml`.
 
-**Dark and light:** the bar's dark/light button (or `noctalia msg theme-mode-toggle`) switches the colors **and the wallpaper**. Each mode has its own folder, `~/Pictures/Wallpapers/Dark` and `Light` (not tracked). Defaults, downloaded by `install.sh niri` from [Wallhaven](https://wallhaven.cc): dark [`5y3q31`](https://wallhaven.cc/w/5y3q31) (Milky Way over a mountain lake), light [`e89l8k`](https://wallhaven.cc/w/e89l8k) (clouds). For more, the bar's Wallhaven button (official `noctalia/wallhaven` plugin) searches Wallhaven (try `nature`, `forest`, `mountains`), previews, and **Apply** saves into the current mode's folder. Your own images can go in the folders too. The wallpaper you pick in a mode is remembered for that mode (`~/.local/bin/wallpaper-mode`, run by Noctalia's `theme_mode_changed` hook).
+**Bar:** thin, translucent and blurred, along the top. Left: workspaces (numbered squares) and the focused app; middle: date and time; right: tray, notifications, Wi-Fi, Bluetooth, volume, battery (icons only), control center, power. Everything else is in the **control center** (`Mod+S`): Wi-Fi, Bluetooth, Dark Mode, power profile, Night Light, Do Not Disturb, and the Power tab's battery limit.
+
+**Dark and light:** the control center's Dark Mode (or `noctalia msg theme-mode-toggle`) switches the colors **and the wallpaper**. Each mode has its own folder, `~/Pictures/Wallpapers/Dark` and `Light` (not tracked). Defaults, downloaded by `install.sh niri` from [Wallhaven](https://wallhaven.cc): dark [`5y3q31`](https://wallhaven.cc/w/5y3q31) (Milky Way over a mountain lake), light [`e89l8k`](https://wallhaven.cc/w/e89l8k) (clouds). Add your own images to the folders (more nature ones: [wallhaven.cc/search?q=nature](https://wallhaven.cc/search?q=nature&categories=100&purity=100&atleast=1920x1080&sorting=toplist)) and pick with the launcher's `/wall`. No plugins: Noctalia's plugin catalogue auto-update is off (`[plugins]` in `config.toml`). The wallpaper you pick in a mode is remembered for that mode (`~/.local/bin/wallpaper-mode`, run by Noctalia's `theme_mode_changed` hook).
 
 **Keys** (`Mod+Shift+/` shows them all). Shift moves, Ctrl is workspaces, Alt is monitors; arrows work like H/J/K/L.
 
@@ -282,7 +284,9 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 
 **Password apps** (Bitwarden, Ente Auth, KeePassXC) are black in screen sharing and automatic screenshots; notifications are hidden from screen sharing.
 
-**Battery limit:** the bar's battery-charging button, or `charge-limit on|off|toggle`. UPower does it and remembers it across reboots.
+**Battery limit:** control center > Power > *Battery charging*, or `charge-limit on|off|toggle` (the same UPower switch; it remembers it across reboots).
+
+**Animations:** niri's are 25% quicker with a slight spring (`animations` in `config.kdl`), Noctalia's 40% (`[shell.animation]`), wallpaper changes 0.7 s. The overview shows the wallpaper blurred behind the workspaces.
 
 **Memory:** apps started from Noctalia run as their own systemd services, apps from niri keys in their own scopes, so systemd-oomd kills only the one using too much.
 
@@ -501,7 +505,7 @@ Flatpak cursor wrong? `flatpak --user override --filesystem=xdg-data/icons:ro` (
 | `ssh-add -L`: "Could not open a connection" | Is Bitwarden running and unlocked, with Settings > SSH agent on? `echo $SSH_AUTH_SOCK` should be `~/.bitwarden-ssh-agent.sock` (log out and in once after changing environment.d) |
 | `gh`: "token is invalid" | `secret-tool search service gh:github.com` (is gnome-keyring unlocked?), then `gh auth login` |
 | niri: bar missing | `systemctl --user status noctalia.service`; `journalctl --user -u noctalia -b` |
-| niri: config error banner | `niri validate`, `noctalia config validate` (it warns about plugin widgets like `wallhaven`: the offline check doesn't load plugins; harmless) |
+| niri: config error banner | `niri validate`, `noctalia config validate` |
 | Brightness slider does nothing | `ls /sys/class/backlight/`: should show `amdgpu_bl*`; check `acpi_backlight=native` in `/etc/kernel/cmdline` |
 | NVIDIA never sleeps | `runtime_status` (above); `fuser -v /dev/nvidia*`; is `libva-nvidia-driver` back? In hybrid it is the firmware bug: use `gpu-mode eco` |
 | Kernel option not applied | `cat /proc/cmdline`; after editing `/etc/kernel/cmdline` run `sudo mkinitcpio -P` (see [Kernel options](#kernel-options)) |

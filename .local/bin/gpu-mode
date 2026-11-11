@@ -30,7 +30,7 @@ nvidia_kdl="${XDG_CONFIG_HOME:-$HOME/.config}/niri/nvidia.kdl"
 if [ "${1:-}" = hdmi ]; then
     case ${2:-} in
     auto | on)
-        rm -f "$nvidia_kdl"
+        printf '// gpu-mode hdmi auto (default): niri uses the NVIDIA GPU whenever it is on.\n' >"$nvidia_kdl"
         echo "HDMI auto: niri uses the NVIDIA GPU whenever it's on (from the next login)." ;;
     off)
         printf '%s\n' '// gpu-mode hdmi off: niri never opens the NVIDIA GPU; no HDMI.' \

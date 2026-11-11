@@ -36,16 +36,18 @@ input_path = "templates/ghostty-colors"
 output_path = "~/.config/ghostty/noctalia-colors"   # read via `config-file = ?noctalia-colors`
 post_hook = "bash /usr/share/noctalia/assets/templates/ghostty/reload.sh"
 
-# Dark and light wallpapers: one folder each, with a nature default downloaded
-# by install.sh niri. Switching dark/light (bar button, or `noctalia msg
-# theme-mode-toggle`) swaps the wallpaper too, through the hook below; the one
-# you pick in each mode is remembered (~/.local/bin/wallpaper-mode). More from
-# the Wallhaven panel (bar button), saved into the current mode's folder.
+# Dark and light wallpapers: one folder each (not tracked), with a nature default
+# downloaded by install.sh niri. Switching dark/light (control center's Dark Mode,
+# or `noctalia msg theme-mode-toggle`) swaps the wallpaper too, through the hook
+# below; the one you pick in each mode is remembered (~/.local/bin/wallpaper-mode).
+# Add your own images to the folders; pick one with the launcher's /wall.
 [wallpaper]
 directory = "~/Pictures/Wallpapers"
 directory_dark = "~/Pictures/Wallpapers/Dark"
 directory_light = "~/Pictures/Wallpapers/Light"
 fill_mode = "crop"
+transition = ["fade", "disc", "wipe"]
+transition_duration = 700            # ms (default 1500)
 
 [wallpaper.default]
 path = "~/Pictures/Wallpapers/Dark/wallhaven-5y3q31.jpg"
@@ -53,38 +55,113 @@ path = "~/Pictures/Wallpapers/Dark/wallhaven-5y3q31.jpg"
 [hooks]
 theme_mode_changed = "wallpaper-mode"
 
-# Official plugins (github.com/noctalia-dev/official-plugins), fetched on enable.
-[plugins]
-enabled = ["noctalia/wallhaven"]
+# niri's overview shows the wallpaper blurred behind the workspaces
+# (with the place-within-backdrop layer rule in ~/.config/niri/config.kdl).
+[backdrop]
+enabled = true
+blur_intensity = 0.6
+tint_intensity = 0.25
 
-# ── Bar: thin, flat, full width along the top edge ──────────────────────────
+# No plugins in use: don't keep fetching the plugin catalogues (git) in the
+# background (that stalled the shell for ~18 s once). Settings > Plugins still
+# works; update a source there by hand.
+[plugins]
+enabled = []
+auto_update = "none"
+
+[shell.animation]
+speed = 1.4                          # UI animations 40% faster (1.0 = default)
+
+[shell.panel]
+transparency_mode = "soft"           # solid | soft | glass
+
+# ── Bar: thin, translucent and blurred, full width along the top ────────────
+# GNOME/macOS layout: workspaces + app on the left, date and time in the middle,
+# icon-only status on the right; the rest is in the control center (Mod+S).
 
 [bar.main]
 position = "top"
-thickness = 26
+thickness = 28
 radius = 0
 margin_ends = 0
 margin_edge = 0
-padding = 8
+padding = 10
+widget_spacing = 8
+background_opacity = 0.72            # see-through, so niri can blur behind it
+compositor_blur = true
 shadow = false
-compositor_blur = false
 capsule = false
-start = ["launcher", "workspaces", "active_window"]
+start = ["workspaces", "app"]
 center = ["clock"]
-end = ["media", "tray", "notifications", "clipboard", "theme_mode", "wallhaven", "power_profile", "charge-limit", "network", "bluetooth", "volume", "brightness", "battery", "control-center", "session"]
+end = ["media", "tray", "notifications", "wifi", "bluetooth", "volume", "battery", "control-center", "session"]
 
-# Wallhaven browser: search (e.g. "nature"), preview, Apply.
-[widget.wallhaven]
-type = "noctalia/wallhaven:wallhaven"
+# Square workspace buttons with their number; the active one is filled.
+[widget.workspaces]
+type = "workspaces"
+style = "regular"
+show_labels = true
+show_icons = false
+active_pill_size = 1.0
+inactive_pill_size = 1.0
+capsule_radius = 3.0
 
-# Click: stop charging at 90% <-> charge to 100% (UPower; ~/.local/bin/charge-limit).
-[widget.charge-limit]
-type = "custom_button"
-glyph = "battery-charging"
-tooltip = "Battery limit: click to switch between 90% and 100%"
+[widget.app]
+type = "active_window"
+display = "icon_and_text"
+max_length = 40
 
-[widget.charge-limit.actions]
-left = "exec charge-limit toggle"
+[widget.clock]
+type = "clock"
+format = "{:%a %d %b  %H:%M}"        # Tue 11 Nov  14:05
+
+[widget.media]
+type = "media"
+hide_when_no_media = true
+hide_album_art = true
+max_length = 40
+
+[widget.wifi]
+type = "network"
+show_label = false
+
+[widget.bluetooth]
+type = "bluetooth"
+show_label = false
+hide_when_adapter_off = true
+
+[widget.volume]
+type = "volume"
+show_label = false
+
+# Battery: icon + percent. The 90% limit: control center > Power > Battery
+# charging (same UPower switch as `charge-limit on|off`).
+[widget.battery]
+type = "battery"
+display_mode = "graphic"
+show_label = true
+label_content = "percent"
+
+# Control center (Mod+S or the bar button): the toggles that left the bar.
+[control_center]
+show_shortcut_labels = true
+
+[[control_center.shortcuts]]
+type = "wifi"
+
+[[control_center.shortcuts]]
+type = "bluetooth"
+
+[[control_center.shortcuts]]
+type = "dark_mode"
+
+[[control_center.shortcuts]]
+type = "power_profile"
+
+[[control_center.shortcuts]]
+type = "nightlight"
+
+[[control_center.shortcuts]]
+type = "notification"
 
 # ── Lock and idle (both off by default in Noctalia) ─────────────────────────
 

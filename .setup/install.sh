@@ -181,8 +181,8 @@ if [ "$de" = niri ]; then
     noctalia config validate
     mkdir -p "$HOME/Pictures/Screenshots"
 
-    # Wallpapers: a nature default per mode, from Wallhaven (more in Noctalia's
-    # Wallhaven panel, which saves into the folder of the current mode).
+    # Wallpapers: a nature default per mode, from Wallhaven. If a download
+    # fails, Noctalia shows its own wallpaper; nothing else depends on these.
     #   Dark:  5y3q31, Milky Way over a mountain lake (Unsplash photo)
     #   Light: e89l8k, clouds on a blue sky
     get_wallpaper() {

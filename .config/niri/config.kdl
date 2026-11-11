@@ -78,8 +78,26 @@ hotkey-overlay {
 
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 
+// Quicker than niri's defaults; movement keeps a slight spring.
 animations {
-    slowdown 0.8
+    slowdown 0.75
+    window-open {
+        duration-ms 160
+        curve "ease-out-expo"
+    }
+    window-close {
+        duration-ms 120
+        curve "ease-out-quad"
+    }
+    horizontal-view-movement {
+        spring damping-ratio=0.9 stiffness=900 epsilon=0.0001
+    }
+    window-movement {
+        spring damping-ratio=0.9 stiffness=900 epsilon=0.0001
+    }
+    workspace-switch {
+        spring damping-ratio=1.0 stiffness=1000 epsilon=0.0001
+    }
 }
 
 overview {
@@ -119,6 +137,13 @@ window-rule {
     open-floating true
     default-column-width { fixed 1080; }
     default-window-height { fixed 920; }
+}
+
+// Noctalia's blurred wallpaper sits behind the workspaces in the overview
+// (Noctalia docs, niri page; [backdrop] in ~/.config/noctalia/config.toml).
+layer-rule {
+    match namespace="^noctalia-backdrop"
+    place-within-backdrop true
 }
 
 // Notifications can carry OTP codes: keep them out of screen sharing.
