@@ -50,7 +50,11 @@ if [ "$cur" = "$want" ] && ! { [ "$want" = 0 ] && ! gpu_present; }; then
 fi
 
 if [ "$want" = 1 ] && [ -e /sys/bus/pci/devices/0000:01:00.0 ]; then
+    # nvidia-powerd always holds the GPU in hybrid; it is ours to stop, so it
+    # must not count as "in use".
+    sudo systemctl stop nvidia-powerd.service 2>/dev/null || true
     if sudo fuser -s /dev/nvidia[0-9]* /dev/nvidiactl 2>/dev/null; then
+        sudo systemctl start nvidia-powerd.service 2>/dev/null || true
         sudo fuser -v /dev/nvidia[0-9]* /dev/nvidiactl 2>&1 | sed 's/^/  /'
         sudo mkdir -p "${pending%/*}"
         echo eco | sudo tee "$pending" >/dev/null
@@ -59,7 +63,6 @@ if [ "$want" = 1 ] && [ -e /sys/bus/pci/devices/0000:01:00.0 ]; then
         exit 0
     fi
     # Unload the driver first (as supergfxctl does).
-    sudo systemctl stop nvidia-powerd.service 2>/dev/null || true
     sudo modprobe -r nvidia_drm nvidia_modeset nvidia_uvm nvidia
     for dev in /sys/bus/pci/devices/0000:01:00.*; do
         echo 1 | sudo tee "$dev/remove" >/dev/null
@@ -87,5 +90,6 @@ if [ "$want" = 0 ]; then
     sudo systemctl start nvidia-powerd.service 2>/dev/null || true
     echo "hybrid: NVIDIA GPU on (prime-run and CUDA now; HDMI: if niri doesn't pick it up, log out and in)"
 else
+    sudo rm -f "$pending"
     echo "eco: NVIDIA GPU off"
 fi
