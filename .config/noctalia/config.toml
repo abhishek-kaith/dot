@@ -102,6 +102,9 @@ show_icons = false
 active_pill_size = 1.0
 inactive_pill_size = 1.0
 capsule_radius = 3.0
+focused_color = "primary"            # accent from the wallpaper
+occupied_color = "surface_container_highest"
+empty_color = "#00000000"            # empty: just the number, no box
 
 [widget.app]
 type = "active_window"
@@ -115,8 +118,9 @@ format = "{:%a %d %b  %H:%M}"        # Tue 11 Nov  14:05
 [widget.media]
 type = "media"
 hide_when_no_media = true
+hide_when_idle = true               # paused for a while: hide
 hide_album_art = true
-max_length = 40
+max_length = 220                     # pixels
 
 [widget.wifi]
 type = "network"
