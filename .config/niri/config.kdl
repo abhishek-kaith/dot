@@ -48,6 +48,13 @@ layout {
     }
 }
 
+// Four workspaces that always exist (named ones stay even when empty);
+// niri adds one empty workspace below them as usual.
+workspace "1"
+workspace "2"
+workspace "3"
+workspace "4"
+
 // no client-side title bars
 prefer-no-csd
 

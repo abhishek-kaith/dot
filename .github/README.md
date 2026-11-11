@@ -100,6 +100,7 @@ Only `dot add`ed files are tracked (`status.showUntrackedFiles no`).
 | `~/.local/state/noctalia/settings.toml` | | Noctalia's Settings window writes here and wins over `config.toml`; copy keepers back |
 | `noctalia.kdl`, `ghostty/noctalia-colors`, `gtk-*/noctalia.css`, `qt6ct/colors/` | | wallpaper colors, rewritten by Noctalia |
 
+- **Workspaces:** 1–4 always exist (named in `config.kdl`), plus one empty below as usual.
 - **Look:** thin blurred bar on top; colors follow the wallpaper (Noctalia, niri borders, GTK, Qt, Ghostty, btop). Dark/light also swaps the wallpaper: each mode has a folder, `~/Pictures/Wallpapers/{Dark,Light}`, and remembers its last pick (`wallpaper-mode`, a Noctalia hook). Defaults come from Wallhaven ([dark](https://wallhaven.cc/w/5y3q31), [light](https://wallhaven.cc/w/e89l8k)). No Noctalia plugins.
 - **Control center** (`Mod+S`): Dark Mode, Night Light (left-click: scheduled 19:30–07:00; right-click: always on), Caffeine (never sleep), power profile, Do Not Disturb, mic; Power tab: battery limit on/off.
 - **Idle:** lock at 10 min, screen off at 11, suspend at 30 on battery only. Caffeine and playing video hold them off.
