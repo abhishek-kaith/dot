@@ -1,4 +1,8 @@
+# Minimal prompt: folder, git, Python venv, how long the last command took.
+# Only what's listed in `format` is shown, so cloud accounts (gcloud/aws email),
+# language versions and the rest stay hidden. user@host shows only over SSH.
 add_newline = false
+format = "$username$hostname$directory$git_branch$git_state$git_status$python$nix_shell$cmd_duration$jobs$character"
 
 [character]
 success_symbol = "[❯](green)"
@@ -10,3 +14,7 @@ truncate_to_repo = true
 
 [git_status]
 disabled = false
+
+# Only the virtualenv name, not the Python version.
+[python]
+format = '[(\($virtualenv\) )]($style)'

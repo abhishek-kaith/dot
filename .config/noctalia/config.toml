@@ -99,7 +99,7 @@ shadow = false
 capsule = false
 start = ["workspaces", "app"]
 center = ["clock"]
-end = ["media", "tray", "notifications", "wifi", "bluetooth", "volume", "battery"]
+end = ["media", "tray", "notifications", "wifi", "bluetooth", "volume", "brightness", "battery"]
 
 # Square workspace buttons with their number; the active one is filled.
 [widget.workspaces]
@@ -139,6 +139,10 @@ hide_when_adapter_off = true
 type = "volume"
 show_label = false
 
+[widget.brightness]
+type = "brightness"
+show_label = false
+
 # Battery: icon + percent. The 90% limit: control center > Power > Battery
 # charging (same UPower switch as `charge-limit on|off`).
 [widget.battery]
@@ -147,27 +151,28 @@ display_mode = "glyph"               # same size as the other icons
 show_label = true
 label_content = "percent"
 
-# Control center (Mod+S): the toggles that left the bar.
+# Control center (Mod+S / Mod+A) home buttons, 6 at most. Wi-Fi and Bluetooth
+# are on the bar already. Caffeine = never sleep / lock until turned off.
 [control_center]
 show_shortcut_labels = true
-
-[[control_center.shortcuts]]
-type = "wifi"
-
-[[control_center.shortcuts]]
-type = "bluetooth"
 
 [[control_center.shortcuts]]
 type = "dark_mode"
 
 [[control_center.shortcuts]]
-type = "power_profile"
-
-[[control_center.shortcuts]]
 type = "nightlight"
 
 [[control_center.shortcuts]]
+type = "caffeine"
+
+[[control_center.shortcuts]]
+type = "power_profile"
+
+[[control_center.shortcuts]]
 type = "notification"
+
+[[control_center.shortcuts]]
+type = "mic_mute"
 
 # ── Lock and idle (both off by default in Noctalia) ─────────────────────────
 

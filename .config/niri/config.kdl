@@ -181,7 +181,13 @@ binds {
     Mod+Space  hotkey-overlay-title=null { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
     Mod+S      hotkey-overlay-title="Control center" { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
     Mod+V      hotkey-overlay-title="Clipboard history" { spawn "noctalia" "msg" "panel-toggle" "clipboard"; }
-    Mod+Shift+Comma hotkey-overlay-title="Settings" { spawn "noctalia" "msg" "settings-toggle"; }
+    // Same keys as Windows / macOS where niri doesn't use them already:
+    // Win+I settings, Win+A quick settings, Win+N notifications, Win+V clipboard,
+    // Win+; emoji, Win+Shift+S screenshot, Win+E files, Cmd+Space search.
+    Mod+I      hotkey-overlay-title="Settings" { spawn "noctalia" "msg" "settings-toggle"; }
+    Mod+Shift+Comma hotkey-overlay-title=null { spawn "noctalia" "msg" "settings-toggle"; }
+    Mod+A      hotkey-overlay-title="Control center" { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
+    Mod+N      hotkey-overlay-title="Notifications" { spawn "noctalia" "msg" "panel-toggle" "control-center" "notifications"; }
     Mod+Semicolon hotkey-overlay-title="Emoji" { spawn "noctalia" "msg" "panel-toggle" "launcher" "/emo"; }
     Mod+Shift+W hotkey-overlay-title="Wallpaper picker" { spawn "noctalia" "msg" "panel-toggle" "wallpaper"; }
     Mod+Shift+D hotkey-overlay-title="Dark / light" { spawn "noctalia" "msg" "theme-mode-toggle"; }
@@ -319,7 +325,7 @@ binds {
     // session
     Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
     Mod+Shift+E hotkey-overlay-title="Power menu" { spawn "noctalia" "msg" "panel-toggle" "session"; }
-    Ctrl+Alt+Delete { quit; }
+    Ctrl+Alt+Delete hotkey-overlay-title=null { spawn "noctalia" "msg" "panel-toggle" "session"; }
     Mod+Shift+P { power-off-monitors; }
 }
 

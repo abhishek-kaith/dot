@@ -68,7 +68,7 @@ git config --file ~/.config/git/local user.name  "Your Name"
 git config --file ~/.config/git/local user.email "you@example.com"
 ```
 
-- **Battery limit:** set by `install.sh` (stops at 90%, any desktop). `charge-limit off` before a trip, `charge-limit on` after. See [niri + Noctalia](#niri--noctalia).
+- **Battery limit:** set by `install.sh` (stops at 90%). Off before a trip, on after: control center > Power > *Battery charging*.
 - **Refresh rate / VRR:** niri: `~/.config/niri/hosts/<hostname>.kdl`. GNOME: Settings > Displays.
 - **Bitwarden:** log in; Settings > *Enable SSH agent*, *Start to tray*, *Close to tray*. Install the Bitwarden extension in Zen and Chromium. See [Passwords, 2FA, SSH](#passwords-2fa-ssh).
 - **Ente Auth:** log in (or choose offline), turn on App lock.
@@ -199,7 +199,7 @@ Rule of thumb: **pacman** for the system and CLI tools the shell needs, **mise**
 ### System setup done by `install.sh`
 
 - **systemd-oomd:** Fedora's defaults. Under sustained memory pressure it kills the one app using too much memory, before the system freezes.
-- **Battery limit:** UPower stops charging at 90% (`charge_limit=` in a machine script changes it); `charge-limit on|off|toggle`.
+- **Battery limit:** UPower stops charging at 90% (`charge_limit=` in a machine script changes it); switched in the control center > Power.
 - **Services:** bluetooth, cups (printing), `fstrim.timer` (SSD TRIM), `paccache.timer` (keeps 3 old package versions for downgrades), `reflector.timer` (mirrors), `podman.socket` (user).
 - **Firewall:** `ufw`, deny incoming; KDE Connect / GSConnect ports `1714–1764` TCP+UDP open; `51413` TCP+UDP for qBittorrent (only qBittorrent listens there).
 - **qBittorrent:** starting config with fixed port `51413`, UPnP on, Web UI off ([`qBittorrent.conf`](../.setup/qBittorrent.conf)); copied only if none exists.
@@ -268,7 +268,8 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 |---|---|
 | `Mod+Return` / `Mod+B` / `Mod+E` | Ghostty / Zen / Files |
 | `Mod+D` or `Mod+Space`, `Mod+S`, `Mod+V` | launcher (Spotlight-style search), control center, clipboard history |
-| `Mod+Shift+Comma`, `Mod+Shift+W`, `Mod+Shift+D` | Noctalia settings, wallpaper picker, dark/light |
+| `Mod+I`, `Mod+A` (or `Mod+S`), `Mod+N` | settings, control center, notifications (as Win+I / Win+A / Win+N) |
+| `Mod+Shift+W`, `Mod+Shift+D` | wallpaper picker, dark/light |
 | `Mod+Semicolon`, `Mod+Shift+N` | emoji picker, Do Not Disturb |
 | `Mod+H/L`, `Mod+J/K` | focus column; focus window, running on into the next workspace |
 | `Mod+Shift+H/J/K/L` | move column; move window (into the next workspace at the edge) |
@@ -281,7 +282,7 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 | `Mod+Shift+Space` | float / tile |
 | `Mod+O`, `Alt+Tab` | overview, recent windows |
 | `Print` or `Mod+Shift+S` | screenshot (pick area, window or screen) |
-| `Mod+Q`, `Ctrl+Alt+L`, `Mod+Shift+E` | close, lock, power menu (log out, suspend, reboot, shut down) |
+| `Mod+Q`, `Ctrl+Alt+L`, `Mod+Shift+E` or `Ctrl+Alt+Delete` | close, lock, power menu (log out, suspend, reboot, shut down) |
 
 **Default apps:** Nautilus, Papers, Loupe, Text Editor, Showtime, Decibels (set by `install.sh niri` with `xdg-mime`). **File dialogs** come from the GTK portal (`~/.config/xdg-desktop-portal/niri-portals.conf`): the GNOME one starts Nautilus first and is slow.
 
@@ -289,7 +290,7 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 
 **Password apps** (Bitwarden, Ente Auth, KeePassXC) are black in screen sharing and automatic screenshots; notifications are hidden from screen sharing.
 
-**Battery limit:** control center > Power > *Battery charging*, or `charge-limit on|off|toggle` (the same UPower switch; it remembers it across reboots).
+**Battery limit:** control center > Power > *Battery charging* (built into Noctalia; UPower remembers it across reboots). **Never sleep:** the control center's Caffeine button. **Night Light:** its button there too (right-click: always on).
 
 **Animations:** niri's are 25% quicker with a slight spring (`animations` in `config.kdl`), Noctalia's 40% (`[shell.animation]`), wallpaper changes 0.7 s. The overview shows the wallpaper blurred behind the workspaces.
 
@@ -308,11 +309,7 @@ If greetd doesn't start: `Ctrl+Alt+F2`, log in, `systemctl status greetd`; `niri
 
 ### Moving a KDE machine to niri
 
-The KDE setup lives on the `kde` branch. On a machine still running it:
-
-1. From Plasma: `~/.setup/kwallet-to-keyring.py` (dry run), then `--write`. It copies KWallet's secrets into gnome-keyring and rewrites Chromium's, Electron apps' and Flatpak portal entries into the form each app looks up, so you stay logged in.
-2. `~/.setup/install.sh niri`, reboot, log into niri, run the first-login checks above.
-3. From niri: `~/.setup/remove-kde.sh` (dry run), then `--yes`. It removes Plasma and the KDE apps (pacman asks first), keeps KDE Connect, Inter and Papirus, and moves KDE's settings (and the KWallet file) to `~/.kde-backup-<date>`. It refuses to run inside Plasma or before greetd is the login screen.
+The KDE setup and the two migration scripts are on the `kde` branch: `kwallet-to-keyring.py` (copies KWallet's secrets into gnome-keyring, run from Plasma) and `remove-kde.sh` (removes Plasma, run from niri). Get them without switching branches: `dot show kde:.setup/remove-kde.sh > /tmp/remove-kde.sh`.
 
 ---
 
@@ -324,7 +321,6 @@ The KDE setup lives on the `kde` branch. On a machine still running it:
   bootstrap.sh                         clone + checkout + install (fresh machine)
   install.sh                           ./install.sh niri|gnome
   common.txt gnome.txt niri.txt flatpak.txt
-  kwallet-to-keyring.py remove-kde.sh  moving a KDE machine to niri (see above)
   tuf-a15.sh t14-amd.sh                  per-machine fixes (named after the hostname)
 ~/.zshenv                              every zsh: ZDOTDIR, PATH, EDITOR. Silent and tiny
 ~/.config/zsh/.zshrc                   interactive zsh
@@ -336,12 +332,11 @@ The KDE setup lives on the `kde` branch. On a machine still running it:
 ~/.config/niri/                        config.kdl (shared) + hosts/<hostname>.kdl
 ~/.config/noctalia/                    config.toml + templates/ (wallpaper colors)
 ~/.config/systemd/user/                noctalia.service, niri.service.d/session-env.conf
-~/.config/starship.toml
+~/.config/starship.toml                minimal prompt (no cloud accounts or versions)
 ~/.config/mise/config.toml
 ~/.config/pipewire/pipewire.conf.d/99-mic-denoise.conf
 ~/.config/containers/registries.conf   podman: short names → docker.io
 ~/.local/bin/tmux-sessionizer
-~/.local/bin/charge-limit             battery limit on/off (UPower)
 ~/.local/bin/wallpaper-mode           dark/light wallpaper swap (Noctalia hook)
 ~/.local/bin/gpu-mode                 tuf-a15: NVIDIA eco/hybrid (eco at next boot when in use)
 ```
@@ -412,7 +407,7 @@ A CUDA process (including an idle Jupyter kernel) keeps the GPU awake: close it 
 
 **Battery** (47.5 Wh design): NVIDIA asleep is the big win. Expect ~4–5 h coding at 144 Hz, ~5.5–6 h at 60 Hz + power-saver. Switch refresh: `niri msg output eDP-1 mode 1920x1080@60`. External monitor on battery: use USB-C (AMD), not HDMI (NVIDIA).
 
-**ASUS tools:** not needed. Power modes go through power-profiles-daemon, charge limit through UPower (`charge-limit`), keyboard backlight through Noctalia (or the desktop). `asusctl` (in the Arch repos) is only for hand-tuning power limits (`nv_dynamic_boost`, PPT). If you add it, leave mode switching to power-profiles-daemon.
+**ASUS tools:** not needed. Power modes go through power-profiles-daemon, charge limit through UPower (Noctalia's Power tab), keyboard backlight through Noctalia (or the desktop). `asusctl` (in the Arch repos) is only for hand-tuning power limits (`nv_dynamic_boost`, PPT). If you add it, leave mode switching to power-profiles-daemon.
 
 ### `t14-amd`: ThinkPad T14 Gen 1 AMD
 

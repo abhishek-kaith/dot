@@ -266,7 +266,7 @@ else
 fi
 
 # Battery charge limit, through UPower: works in every desktop and is switched
-# with `charge-limit on|off|toggle` (the bar button in Noctalia). The machine's
+# in Noctalia's control center > Power > Battery charging. The machine's
 # script may set charge_limit; 90 otherwise. Charging restarts 5% below it
 # (only on batteries that support a start point, like the T14's).
 charge_limit=${charge_limit:-90}
@@ -282,8 +282,12 @@ if ls /sys/class/power_supply/*/charge_control_end_threshold >/dev/null 2>&1; th
         sudo udevadm settle
         sudo systemctl restart upower.service
         sleep 2
-        # New or changed limit: turn it on. A later `charge-limit off` is kept.
-        "$HOME/.local/bin/charge-limit" on
+        # New or changed limit: turn it on (UPower). Turning it off later in
+        # Noctalia is kept: this only runs when the limit changes.
+        for dev in $(upower -e | grep '/battery_BAT'); do
+            busctl --system call org.freedesktop.UPower "$dev" \
+                org.freedesktop.UPower.Device EnableChargeThreshold b true || true
+        done
     fi
 fi
 
@@ -293,5 +297,5 @@ if [ "$rebuild" = 1 ]; then
 fi
 
 say "done: reboot now"
-echo "Battery limit: charge-limit (on|off|toggle). See ~/.github/README.md for"
+echo "Battery limit: control center > Power. See ~/.github/README.md for"
 echo "the per-machine checks."
