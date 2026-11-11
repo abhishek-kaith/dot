@@ -207,7 +207,7 @@ Rule of thumb: **pacman** for the system and CLI tools the shell needs, **mise**
 - **qBittorrent:** starting config with fixed port `51413`, UPnP on, Web UI off ([`qBittorrent.conf`](../.setup/qBittorrent.conf)); copied only if none exists.
 - **zram:** Arch wiki tuning for in-memory swap (`swappiness=180`, `page-cluster=0`, watermarks).
 - **TRIM through LUKS2:** `cryptsetup --allow-discards --persistent refresh`, stored in the disk header (no kernel option).
-- **Login screen:** Plasma Login Manager (KDE) / GDM (GNOME). On KDE an existing SDDM is replaced: its leftover Xorg keeps the NVIDIA GPU awake.
+- **Login screen:** Plasma Login Manager (KDE) / GDM (GNOME) / greetd + Noctalia greeter (niri). On KDE an existing SDDM is replaced: its leftover Xorg keeps the NVIDIA GPU awake.
 - **KDE:** KWallet on (app secrets), Ghostty as default terminal, `Meta+Return` opens Ghostty.
 - **Bitwarden** added to autostart (its SSH agent must be running).
 - **GNOME:** `adw-gtk3` theme for GTK3 apps, `Super+Return` opens Ghostty.
@@ -279,7 +279,7 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 | `Print` or `Mod+Shift+S` | screenshot (pick area, window or screen) |
 | `Mod+Q`, `Ctrl+Alt+L`, `Mod+Shift+E` | close, lock, log out |
 
-**Secrets:** gnome-keyring, unlocked at login by the login screen's PAM module (Plasma Login Manager already has it). Moving from KWallet: `~/.setup/kwallet-to-keyring.py` (dry run), then `--write` from Plasma; it rewrites Chromium's, Electron apps' and Flatpak portal entries into the form each app looks up, so you stay logged in. KWallet is left as it was.
+**Secrets:** gnome-keyring, unlocked at login by the login screen's PAM module (added to greetd's by `install.sh niri`). Moving from KWallet: `~/.setup/kwallet-to-keyring.py` (dry run), then `--write` from Plasma; it rewrites Chromium's, Electron apps' and Flatpak portal entries into the form each app looks up, so you stay logged in. KWallet is left as it was.
 
 **Password apps** (Bitwarden, Ente Auth, KeePassXC) are black in screen sharing and automatic screenshots; notifications are hidden from screen sharing.
 
@@ -292,18 +292,20 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 2. Check: `nvidia-smi` shows no niri process (tuf-a15); `secret-tool search --all` lists the secrets; Chromium is still logged in; `gh auth status`.
 3. Bitwarden: copy a password, open `Mod+V`. If it is in the history, tell Noctalia to skip it.
 
-### niri: login screen
+### niri: login screen, and leaving KDE
 
-Plasma Login Manager (or GDM) lists the niri session, so keep it while KDE is installed. A fresh niri-only machine has no login screen: until one is set up, log in on the console and run `niri-session`. Later: `greetd` + `noctalia-greeter` (both in the Arch repos), see its [installation guide](https://github.com/noctalia-dev/noctalia-greeter/blob/main/docs/user/installation.md).
+`install.sh niri` sets up **greetd** with **Noctalia's greeter** (`/etc/greetd/config.toml`, original kept as `config.toml.orig`), adds gnome-keyring to `/etc/pam.d/greetd` so the login password unlocks it, and switches the login screen to greetd at the next boot.
 
-### Keys
+Removing KDE from a machine, once niri works there:
 
-| Key | Does |
-|---|---|
-| `Meta+Return` / `Super+Return` | Ghostty |
-| `Ctrl+F` (zsh), `prefix f` (tmux) | tmux-sessionizer: fuzzy-pick a project, open/switch session |
-| `Ctrl+R` / `Ctrl+T` / `Alt+C` | fzf: history / file / cd |
-| `z <part>` | zoxide jump |
+```sh
+~/.setup/remove-kde.sh          # dry run: packages, settings files, system files
+~/.setup/remove-kde.sh --yes    # from niri, not Plasma; pacman still asks
+```
+
+It keeps KDE Connect, Inter and Papirus, moves KDE's settings (and the KWallet file) to `~/.kde-backup-<date>` instead of deleting them, and refuses to run inside Plasma or before greetd is the login screen. The KDE option stays in this repo for other machines.
+
+If greetd doesn't start: `Ctrl+Alt+F2`, log in, `systemctl status greetd`; `niri-session` starts niri from the console.
 
 ---
 
@@ -316,6 +318,7 @@ Plasma Login Manager (or GDM) lists the niri session, so keep it while KDE is in
   install.sh                           ./install.sh kde|gnome|niri
   common.txt kde.txt gnome.txt niri.txt flatpak.txt
   kwallet-to-keyring.py                one-time copy of KWallet secrets into gnome-keyring
+  remove-kde.sh                        remove Plasma + KDE apps after moving to niri
   tuf-a15.sh t14-amd.sh                  per-machine fixes (named after the hostname)
 ~/.zshenv                              every zsh: ZDOTDIR, PATH, EDITOR. Silent and tiny
 ~/.config/zsh/.zshrc                   interactive zsh

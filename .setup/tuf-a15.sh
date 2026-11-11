@@ -33,16 +33,17 @@ kernel_param acpi_backlight=native
 #   0000:05:00.0 = Radeon 740M (panel, USB-C)   0000:01:00.0 = RTX 3050 (HDMI)
 # NVIDIA is added second (so HDMI works) only while it exists: gpu-mode eco
 # removes it.
-say "KWin: render on the AMD GPU"
-sudo tee /etc/udev/rules.d/61-gpu-names.rules >/dev/null <<'EOF'
+if [ "$de" = kde ]; then
+    say "KWin: render on the AMD GPU"
+    sudo tee /etc/udev/rules.d/61-gpu-names.rules >/dev/null <<'EOF'
 SUBSYSTEM=="drm", KERNEL=="card[0-9]*", KERNELS=="0000:05:00.0", SYMLINK+="dri/amd-igpu"
 SUBSYSTEM=="drm", KERNEL=="card[0-9]*", KERNELS=="0000:01:00.0", SYMLINK+="dri/nvidia-dgpu"
 EOF
-sudo udevadm control --reload
-sudo udevadm trigger --subsystem-match=drm
-# Machine-specific, so written here and NOT tracked in the dotfiles repo.
-mkdir -p "$HOME/.config/plasma-workspace/env"
-cat > "$HOME/.config/plasma-workspace/env/gpu.sh" <<'EOF'
+    sudo udevadm control --reload
+    sudo udevadm trigger --subsystem-match=drm
+    # Machine-specific, so written here and NOT tracked in the dotfiles repo.
+    mkdir -p "$HOME/.config/plasma-workspace/env"
+    cat > "$HOME/.config/plasma-workspace/env/gpu.sh" <<'EOF'
 #!/bin/sh
 # Written by ~/.setup/tuf-a15.sh: KWin renders on the AMD iGPU; the NVIDIA GPU
 # (HDMI) is added only when it is on (gpu-mode hybrid).
@@ -52,7 +53,8 @@ else
     export KWIN_DRM_DEVICES=/dev/dri/amd-igpu
 fi
 EOF
-chmod +x "$HOME/.config/plasma-workspace/env/gpu.sh"
+    chmod +x "$HOME/.config/plasma-workspace/env/gpu.sh"
+fi
 
 # Dynamic Boost: lets the GPU go from 60 W up to 95 W on AC by borrowing CPU
 # budget. Does nothing on battery. Skipped quietly in gpu-mode eco (no GPU).

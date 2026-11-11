@@ -8,9 +8,8 @@ de=${1:-}
 case $de in
     kde) dm=plasmalogin.service ;;
     gnome) dm=gdm.service ;;
-    # niri keeps the login screen already there (it lists the niri session).
-    # A fresh niri-only machine has none: see "niri: login screen" in ~/.github/README.md.
-    niri) dm= ;;
+    # niri: greetd + Noctalia's greeter (set up below, under "services").
+    niri) dm=greetd.service ;;
     *) echo "usage: $0 kde|gnome|niri" >&2; exit 1 ;;
 esac
 
@@ -110,13 +109,44 @@ luks_discard "${root#/dev/mapper/}"
 
 say "services"
 sudo systemctl enable --now bluetooth.service cups.socket fstrim.timer paccache.timer reflector.timer
-# Keep a login screen that is already set up; only enable one on a fresh install.
-if [ ! -e /etc/systemd/system/display-manager.service ]; then
-    if [ -n "$dm" ]; then
-        sudo systemctl enable "$dm"
-    else
-        echo "!! no login screen: see \"niri: login screen\" in ~/.github/README.md"
+
+# niri's login screen: greetd runs Noctalia's greeter (noctalia-greeter docs,
+# "Installation"). Arch's greetd PAM file has no gnome-keyring line, so it is
+# added: the login password then unlocks the keyring.
+if [ "$de" = niri ]; then
+    cmd=/usr/bin/noctalia-greeter-session
+    if ! grep -q "^command = \"$cmd\"" /etc/greetd/config.toml 2>/dev/null; then
+        [ -f /etc/greetd/config.toml.orig ] || sudo cp /etc/greetd/config.toml /etc/greetd/config.toml.orig
+        sudo tee /etc/greetd/config.toml >/dev/null <<EOF
+# Written by ~/.setup/install.sh niri (original: config.toml.orig).
+[terminal]
+vt = 1
+
+[default_session]
+command = "$cmd"
+user = "greeter"
+EOF
     fi
+    pam=/etc/pam.d/greetd
+    grep -q '^auth.*pam_gnome_keyring' "$pam" ||
+        printf 'auth       optional     pam_gnome_keyring.so\n' | sudo tee -a "$pam" >/dev/null
+    grep -q '^session.*pam_gnome_keyring' "$pam" ||
+        printf 'session    optional     pam_gnome_keyring.so auto_start\n' | sudo tee -a "$pam" >/dev/null
+    grep -q '^password.*pam_gnome_keyring' "$pam" ||
+        printf 'password   optional     pam_gnome_keyring.so\n' | sudo tee -a "$pam" >/dev/null
+    sudo systemd-tmpfiles --create noctalia-greeter.conf
+    sudo noctalia-greeter-apply-appearance --setup-system
+fi
+
+# Keep a login screen that is already set up; only enable one on a fresh install.
+# niri replaces any other one with greetd. Both switches apply at the next boot.
+current=$(readlink /etc/systemd/system/display-manager.service 2>/dev/null || true)
+if [ -z "$current" ]; then
+    sudo systemctl enable "$dm"
+elif [ "$de" = niri ] && [ "${current##*/}" != "$dm" ]; then
+    sudo systemctl disable "${current##*/}"
+    sudo systemctl enable "$dm"
+    echo "  login screen: ${current##*/} -> $dm (after reboot)"
 fi
 # Except SDDM on KDE (archinstall's pick): its X11 greeter leaves an Xorg running
 # after login, which keeps the NVIDIA GPU awake. Plasma Login Manager is Wayland.

@@ -1,10 +1,11 @@
 # niri (scrolling tiling) + Noctalia v5 shell, with GNOME apps. All from Arch's
 # repos: no AUR. Config: ~/.config/niri, ~/.config/noctalia.
-# The login screen is not changed when one exists (Plasma's keeps working and
-# lists niri); gnome-keyring is unlocked at login by its PAM module.
+# Login screen: greetd + noctalia-greeter; gnome-keyring is unlocked at login
+# by its PAM module (added to /etc/pam.d/greetd by install.sh).
 
 niri                          # compositor; Alt+Tab, overview and screenshots built in
 noctalia                      # bar, launcher, notifications, lock, idle, polkit, wallpaper
+greetd noctalia-greeter        # login screen (install.sh writes greetd's config)
 xwayland-satellite            # X11 apps (niri starts it on demand)
 xdg-desktop-portal-gnome      # screen sharing + file dialogs (niri's portal choice)
 gnome-keyring seahorse        # app secrets (gh, Chromium, Flatpaks); seahorse = viewer
