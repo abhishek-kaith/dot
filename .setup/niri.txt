@@ -11,7 +11,7 @@ xdg-desktop-portal-gnome      # screen sharing + file dialogs (niri's portal cho
 gnome-keyring seahorse        # app secrets (gh, Chromium, Flatpaks); seahorse = viewer
 kdeconnect                    # phone link; GSConnect needs GNOME Shell
 playerctl                     # media keys
-libnotify                     # notify-send (charge-limit)
+libnotify                     # notify-send, for scripts
 system-config-printer         # printers
 
 # look: GTK and Qt both follow the wallpaper colors through Noctalia templates

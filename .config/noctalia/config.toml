@@ -144,7 +144,7 @@ type = "brightness"
 show_label = false
 
 # Battery: icon + percent. The 90% limit: control center > Power > Battery
-# charging (same UPower switch as `charge-limit on|off`).
+# charging (built into Noctalia; UPower).
 [widget.battery]
 type = "battery"
 display_mode = "glyph"               # same size as the other icons
