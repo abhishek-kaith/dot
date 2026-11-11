@@ -15,6 +15,11 @@ niri_overview_type_to_launch_enabled = true   # type in niri's overview to searc
 launch_apps_as_systemd_services = true
 
 # Spotlight-like: just the search box and results (no avatar, power or gear).
+# Login screen (noctalia-greeter) follows the wallpaper, colors and font
+# whenever they change. Avatar: ~/.face, via AccountsService.
+[shell.greeter_sync]
+auto_sync = true
+
 [shell.launcher]
 layout = "simple"
 category_icons_only = true           # the simple layout is 560 px wide: labels didn't fit
@@ -198,3 +203,12 @@ action = "lock"
 enabled = true
 timeout = 660                        # screen off a minute later
 action = "screen_off"
+
+# Suspend after 30 min idle, on battery only (plugged in it stays awake).
+# Locks first (lockscreen.lock_before_suspend). Caffeine in the control
+# center, and apps playing video, hold all of these off.
+[idle.behavior.suspend-on-battery]
+enabled = true
+timeout = 1800
+action = "command"
+command = '''sh -c 'for p in /sys/class/power_supply/*; do [ "$(cat "$p/type")" = Mains ] && [ "$(cat "$p/online")" = 1 ] && exit 0; done; systemctl suspend''''

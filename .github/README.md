@@ -288,6 +288,8 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 
 **Secrets:** gnome-keyring. With autologin (default) it starts locked and asks for your password once per boot, the first time an app needs a secret (Bitwarden, right after login). Through the login screen, the password typed there unlocks it (PAM, added to greetd's by `install.sh niri`).
 
+**Idle:** lock after 10 min, screen off after 11, **suspend after 30 min on battery only** (plugged in it stays awake). The control center's **Caffeine** button, and any app playing video, hold all of these off. **Login screen:** follows the wallpaper, colors and font by itself (`[shell.greeter_sync] auto_sync`); avatar: `~/.face`, registered with AccountsService (`busctl --system call org.freedesktop.Accounts /org/freedesktop/Accounts/User$(id -u) org.freedesktop.Accounts.User SetIconFile s ~/.face`).
+
 **Night Light:** three states from its control center button: **off**, **scheduled** (left-click; 4000 K from 19:30 to 07:00, fading over an hour) and **always on** (right-click). Times: `[location]` in `config.toml` (fixed, no location lookup).
 
 **Password apps** (Bitwarden, Ente Auth, KeePassXC) are black in screen sharing and automatic screenshots; notifications are hidden from screen sharing.
