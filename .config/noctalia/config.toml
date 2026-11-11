@@ -93,7 +93,7 @@ shadow = false
 capsule = false
 start = ["workspaces", "app"]
 center = ["clock"]
-end = ["media", "tray", "notifications", "wifi", "bluetooth", "volume", "battery", "control-center", "session"]
+end = ["media", "tray", "notifications", "wifi", "bluetooth", "volume", "battery", "settings"]
 
 # Square workspace buttons with their number; the active one is filled.
 [widget.workspaces]
@@ -108,7 +108,7 @@ capsule_radius = 3.0
 [widget.app]
 type = "active_window"
 display = "icon_and_text"
-max_length = 40
+max_length = 360                     # pixels, not characters
 
 [widget.clock]
 type = "clock"
@@ -137,11 +137,19 @@ show_label = false
 # charging (same UPower switch as `charge-limit on|off`).
 [widget.battery]
 type = "battery"
-display_mode = "graphic"
+display_mode = "glyph"               # same size as the other icons
 show_label = true
 label_content = "percent"
 
-# Control center (Mod+S or the bar button): the toggles that left the bar.
+# One gear instead of the control-center and power buttons. Left click: settings;
+# right click: control center (also Mod+S). Power menu: Mod+Shift+E.
+[widget.settings]
+type = "settings"
+
+[widget.settings.actions]
+right = "panel-toggle control-center"
+
+# Control center (Mod+S, or right-click the gear): the toggles that left the bar.
 [control_center]
 show_shortcut_labels = true
 

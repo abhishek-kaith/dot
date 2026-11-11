@@ -171,7 +171,11 @@ binds {
     Mod+Space  hotkey-overlay-title=null { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
     Mod+S      hotkey-overlay-title="Control center" { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
     Mod+V      hotkey-overlay-title="Clipboard history" { spawn "noctalia" "msg" "panel-toggle" "clipboard"; }
-    Mod+Shift+Comma hotkey-overlay-title="Noctalia settings" { spawn "noctalia" "msg" "settings-toggle"; }
+    Mod+Comma  hotkey-overlay-title="Settings" { spawn "noctalia" "msg" "settings-toggle"; }
+    Mod+Period hotkey-overlay-title="Emoji" { spawn "noctalia" "msg" "panel-toggle" "launcher" "/emo"; }
+    Mod+Shift+W hotkey-overlay-title="Wallpaper picker" { spawn "noctalia" "msg" "panel-toggle" "wallpaper"; }
+    Mod+Shift+D hotkey-overlay-title="Dark / light" { spawn "noctalia" "msg" "theme-mode-toggle"; }
+    Mod+Shift+N hotkey-overlay-title="Do not disturb" { spawn "noctalia" "msg" "notification-dnd-toggle"; }
     Ctrl+Alt+L hotkey-overlay-title="Lock" { spawn "noctalia" "msg" "session" "lock"; }
 
     XF86AudioRaiseVolume allow-when-locked=true { spawn "noctalia" "msg" "volume-up"; }
@@ -272,8 +276,6 @@ binds {
     // columns
     Mod+BracketLeft  { consume-or-expel-window-left; }
     Mod+BracketRight { consume-or-expel-window-right; }
-    Mod+Comma        { consume-window-into-column; }
-    Mod+Period       { expel-window-from-column; }
     Mod+W            { toggle-column-tabbed-display; }
 
     // sizes
@@ -304,7 +306,7 @@ binds {
 
     // session
     Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
-    Mod+Shift+E { quit; }
+    Mod+Shift+E hotkey-overlay-title="Power menu" { spawn "noctalia" "msg" "panel-toggle" "session"; }
     Ctrl+Alt+Delete { quit; }
     Mod+Shift+P { power-off-monitors; }
 }
