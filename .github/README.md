@@ -288,7 +288,7 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 
 **First login on a machine:**
 1. `niri msg outputs`: panel name, modes, VRR support. Put them in `hosts/<hostname>.kdl`.
-2. Check: `sudo fuser -v /dev/nvidia*` shows no niri (tuf-a15); `secret-tool search --all` lists the secrets; `gh auth status`.
+2. Check: `secret-tool search --all` lists the secrets; `gh auth status`; tuf-a15: `nvidia-smi` lists niri only in hybrid (for HDMI), and its render node is AMD (`journalctl --user -u niri -b | grep 'render node'`).
 3. Bitwarden: copy a password, open `Mod+V`. If it is in the history, tell Noctalia to skip it.
 
 ### niri: login screen
@@ -334,7 +334,7 @@ The KDE setup lives on the `kde` branch. On a machine still running it:
 ~/.local/bin/tmux-sessionizer
 ~/.local/bin/charge-limit             battery limit on/off (UPower)
 ~/.local/bin/wallpaper-mode           dark/light wallpaper swap (Noctalia hook)
-~/.local/bin/gpu-mode                 tuf-a15: NVIDIA eco/hybrid, niri HDMI on/off
+~/.local/bin/gpu-mode                 tuf-a15: NVIDIA eco/hybrid (eco at next boot when in use)
 ```
 
 ### Why `.zshenv` is so small
@@ -362,7 +362,7 @@ What [`tuf-a15.sh`](../.setup/tuf-a15.sh) does:
 | `vulkan-radeon` (common.txt) | without it the only Vulkan device is NVIDIA, so Vulkan apps wake it |
 | `acpi_backlight=native` | kernel picked `nvidia_wmi_ec_backlight` and skipped amdgpu's, so brightness did nothing |
 | niri renders on AMD (`render-drm-device` in `hosts/tuf-a15.kdl`) | otherwise it may render on NVIDIA and keep it awake (~13 W idle) |
-| niri leaves NVIDIA alone (`~/.config/niri/nvidia.kdl`, `gpu-mode hdmi off`) | it never holds the GPU, so `gpu-mode eco` works while logged in. Costs HDMI; `gpu-mode hdmi on` + log out and in to use it |
+| `gpu-mode-boot.service` | a `gpu-mode eco` that can't happen at once (niri holds the GPU for HDMI) runs at the next boot, before the login screen |
 | enable `nvidia-powerd` | Dynamic Boost on AC: GPU 60 W → up to 95 W (skipped when the GPU is off) |
 
 Already handled by Arch, nothing to do: runtime D3 (GPU powers off when idle), video memory saved on suspend (driver 595+; `nvidia-suspend/resume/hibernate` services correctly stay **disabled**), `nvidia-drm` modeset.
@@ -381,13 +381,12 @@ If it stays `active`, see what holds it: `sudo fuser -v /dev/nvidia* /dev/dri/ca
 ```sh
 gpu-mode            # show: eco or hybrid
 gpu-mode eco        # NVIDIA off: best battery; no prime-run/CUDA/HDMI (USB-C displays still work)
-gpu-mode hybrid     # NVIDIA back: prime-run/CUDA right away
-gpu-mode hdmi on    # niri drives HDMI (NVIDIA) from the next login; `off` to undo (default)
+gpu-mode hybrid     # NVIDIA back at once: prime-run/CUDA, and HDMI in niri
 ```
 
-Switches live (no reboot); the firmware remembers the mode across boots.
+Like on KDE: in hybrid niri uses the NVIDIA GPU for the HDMI port, in eco it's gone. `hybrid` always switches at once. `eco` switches at once when nothing has the GPU open; in hybrid niri does (for HDMI), so it says so and schedules eco for the **next boot**, done before the login screen. `gpu-mode` shows a scheduled switch; `gpu-mode hybrid` cancels it. The firmware remembers the mode across boots.
 
-`gpu-mode eco` first detaches the GPU from its driver. If something still uses it (a CUDA job, or niri with `hdmi on`), close it, or log out, switch to a console (Ctrl+Alt+F3) and run it there.
+Prefer eco to always switch at once, never HDMI? `gpu-mode hdmi off` (niri never opens the NVIDIA GPU; `gpu-mode hdmi auto` undoes it). Both apply from the next login.
 
 **Using the NVIDIA GPU**
 

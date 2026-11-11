@@ -27,13 +27,50 @@ fi
 kernel_param acpi_backlight=native
 
 # Render on the AMD GPU, not the NVIDIA one (else ~13 W more at idle): one line
-# in ~/.config/niri/hosts/tuf-a15.kdl (render-drm-device).
-# niri also leaves the NVIDIA GPU alone (no HDMI) unless `gpu-mode hdmi on`, so
-# it never keeps it awake and eco/hybrid switch while logged in. Default: off.
-# The choice is ~/.config/niri/nvidia.kdl (not tracked); only made if missing.
-if [ "$de" = niri ] && [ ! -e "$HOME/.config/niri/nvidia.kdl" ]; then
-    "$HOME/.local/bin/gpu-mode" hdmi off
+# in ~/.config/niri/hosts/tuf-a15.kdl (render-drm-device). In hybrid niri also
+# opens the NVIDIA GPU, only for the HDMI port (as KWin did).
+
+# `gpu-mode eco` while niri (or anything) has the NVIDIA GPU open is scheduled:
+# this runs it at the next boot, before the login screen, when nothing holds the
+# GPU. Root-owned copy of just the eco steps from ~/.local/bin/gpu-mode, so root
+# never runs a file from $HOME.
+say "gpu-mode: eco at boot when scheduled"
+sudo mkdir -p /usr/local/lib /var/lib/gpu-mode
+sudo tee /usr/local/lib/gpu-mode-boot >/dev/null <<'EOF'
+#!/bin/sh
+# Written by ~/.setup/tuf-a15.sh. Run by gpu-mode-boot.service when
+# /var/lib/gpu-mode/pending exists (`gpu-mode eco` while the GPU was in use).
+set -eu
+attr=/sys/class/firmware-attributes/asus-armoury/attributes/dgpu_disable
+rm -f /var/lib/gpu-mode/pending
+[ "$(cat "$attr/current_value")" = 1 ] && exit 0
+if [ -e /sys/bus/pci/devices/0000:01:00.0 ]; then
+    modprobe -r nvidia_drm nvidia_modeset nvidia_uvm nvidia
+    for dev in /sys/bus/pci/devices/0000:01:00.*; do
+        echo 1 >"$dev/remove"
+    done
 fi
+echo 1 >"$attr/current_value"
+echo "gpu-mode: eco (NVIDIA GPU off)"
+EOF
+sudo chmod 755 /usr/local/lib/gpu-mode-boot
+sudo tee /etc/systemd/system/gpu-mode-boot.service >/dev/null <<'EOF'
+# Written by ~/.setup/tuf-a15.sh: apply a scheduled `gpu-mode eco` at boot.
+[Unit]
+Description=Switch the NVIDIA GPU off (scheduled gpu-mode eco)
+ConditionPathExists=/var/lib/gpu-mode/pending
+After=systemd-modules-load.service
+Before=display-manager.service nvidia-powerd.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/lib/gpu-mode-boot
+
+[Install]
+WantedBy=multi-user.target
+EOF
+sudo systemctl daemon-reload
+sudo systemctl enable gpu-mode-boot.service
 
 # Dynamic Boost: lets the GPU go from 60 W up to 95 W on AC by borrowing CPU
 # budget. Does nothing on battery. Skipped quietly in gpu-mode eco (no GPU).

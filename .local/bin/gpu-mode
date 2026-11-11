@@ -4,13 +4,16 @@
 #   gpu-mode           show the current mode
 #   gpu-mode eco       NVIDIA GPU powered off: best battery. No prime-run, CUDA
 #                      or HDMI. The laptop panel and USB-C displays keep working.
-#   gpu-mode hybrid    NVIDIA GPU available: prime-run, CUDA, NVENC (HDMI: below).
-#   gpu-mode hdmi on|off
-#                      niri: use the NVIDIA GPU for the HDMI port, or leave it
-#                      alone (default). Takes effect at the next login.
-# Switches live, no reboot; the firmware remembers the setting across boots.
-# niri doesn't touch the NVIDIA GPU unless `hdmi on`, so eco/hybrid switch while
-# logged in. With `hdmi on`, niri holds the GPU: switch to eco from a console.
+#   gpu-mode hybrid    NVIDIA GPU on: prime-run, CUDA, NVENC, and HDMI in niri.
+#   gpu-mode hdmi off|auto
+#                      niri: never use the NVIDIA GPU (no HDMI, but eco always
+#                      switches at once), or use it whenever it's on (default).
+#                      Takes effect at the next login.
+#
+# hybrid switches at once. eco switches at once unless something has the GPU
+# open, which niri does in hybrid (for HDMI, as KWin did): then it's scheduled
+# and done at the next boot, before the login screen (gpu-mode-boot.service,
+# installed by ~/.setup/tuf-a15.sh). The firmware remembers the mode.
 #
 # Why eco exists: on this laptop the firmware sends NVPCF ACPI notifications that
 # make the NVIDIA driver wake the idle GPU again within a second (NVIDIA
@@ -20,21 +23,22 @@ set -eu
 attr=/sys/class/firmware-attributes/asus-armoury/attributes/dgpu_disable
 [ -d "$attr" ] || { echo "no ASUS dgpu_disable switch on this machine" >&2; exit 1; }
 cur=$(cat "$attr/current_value")
+pending=/var/lib/gpu-mode/pending
 
 # niri's HDMI choice: ~/.config/niri/nvidia.kdl, included by hosts/tuf-a15.kdl.
 nvidia_kdl="${XDG_CONFIG_HOME:-$HOME/.config}/niri/nvidia.kdl"
 if [ "${1:-}" = hdmi ]; then
     case ${2:-} in
-    on)
-        printf '// gpu-mode hdmi on: niri uses the NVIDIA GPU for HDMI (and keeps it open).\n' >"$nvidia_kdl"
-        echo "HDMI on: log out and in. niri then holds the NVIDIA GPU (eco only from a console)." ;;
+    auto | on)
+        rm -f "$nvidia_kdl"
+        echo "HDMI auto: niri uses the NVIDIA GPU whenever it's on (from the next login)." ;;
     off)
-        printf '%s\n' '// gpu-mode hdmi off (default): niri leaves the NVIDIA GPU alone; no HDMI.' \
+        printf '%s\n' '// gpu-mode hdmi off: niri never opens the NVIDIA GPU; no HDMI.' \
             'debug {' '    ignore-drm-device "/dev/dri/by-path/pci-0000:01:00.0-render"' '}' >"$nvidia_kdl"
-        echo "HDMI off: log out and in. niri then never opens the NVIDIA GPU." ;;
+        echo "HDMI off: niri never opens the NVIDIA GPU (from the next login)." ;;
     "")
-        if grep -q ignore-drm-device "$nvidia_kdl" 2>/dev/null; then echo "hdmi off"; else echo "hdmi on"; fi ;;
-    *) echo "usage: gpu-mode hdmi [on|off]" >&2; exit 1 ;;
+        if grep -q ignore-drm-device "$nvidia_kdl" 2>/dev/null; then echo "hdmi off"; else echo "hdmi auto"; fi ;;
+    *) echo "usage: gpu-mode hdmi [off|auto]" >&2; exit 1 ;;
     esac
     exit 0
 fi
@@ -42,24 +46,31 @@ fi
 case ${1:-} in
 "")
     if [ "$cur" = 1 ]; then echo "eco: NVIDIA GPU off"; else echo "hybrid: NVIDIA GPU on"; fi
+    [ -e "$pending" ] && echo "eco at the next boot (gpu-mode hybrid cancels)"
     exit 0 ;;
 eco)    want=1 ;;
 hybrid) want=0 ;;
-*)      echo "usage: gpu-mode [eco|hybrid|hdmi [on|off]]" >&2; exit 1 ;;
+*)      echo "usage: gpu-mode [eco|hybrid|hdmi [off|auto]]" >&2; exit 1 ;;
 esac
+
+if [ "$want" = 0 ] && [ -e "$pending" ]; then
+    sudo rm -f "$pending"
+    echo "eco at the next boot: cancelled"
+fi
 [ "$cur" = "$want" ] && { echo "already $1"; exit 0; }
 
 if [ "$want" = 1 ] && [ -e /sys/bus/pci/devices/0000:01:00.0 ]; then
+    if sudo fuser -s /dev/nvidia[0-9]* /dev/nvidiactl 2>/dev/null; then
+        sudo fuser -v /dev/nvidia[0-9]* /dev/nvidiactl 2>&1 | sed 's/^/  /'
+        sudo mkdir -p "${pending%/*}"
+        echo eco | sudo tee "$pending" >/dev/null
+        echo "In use (above), so eco is set for the next boot: reboot when ready."
+        echo "gpu-mode hybrid cancels it."
+        exit 0
+    fi
     # Detach the GPU from its driver first, so the firmware never cuts power
     # under a loaded driver (the same order supergfxctl uses).
     sudo systemctl stop nvidia-powerd.service 2>/dev/null || true
-    if sudo fuser -s /dev/nvidia[0-9]* /dev/nvidiactl 2>/dev/null; then
-        echo "The NVIDIA GPU is still in use:" >&2
-        sudo fuser -v /dev/nvidia[0-9]* /dev/nvidiactl >&2 || true
-        echo "niri holds it only with 'gpu-mode hdmi on': then log out, switch to a" >&2
-        echo "console (Ctrl+Alt+F3), log in, run: gpu-mode eco" >&2
-        exit 1
-    fi
     sudo modprobe -r nvidia_drm nvidia_modeset nvidia_uvm nvidia
     for dev in /sys/bus/pci/devices/0000:01:00.*; do
         echo 1 | sudo tee "$dev/remove" >/dev/null
@@ -77,7 +88,7 @@ if [ "$want" = 0 ]; then
         sleep 1
     done
     sudo systemctl start nvidia-powerd.service 2>/dev/null || true
-    echo "hybrid: NVIDIA GPU on (prime-run and CUDA now; HDMI: gpu-mode hdmi on)"
+    echo "hybrid: NVIDIA GPU on (prime-run and CUDA now; HDMI: if niri doesn't pick it up, log out and in)"
 else
     echo "eco: NVIDIA GPU off"
 fi

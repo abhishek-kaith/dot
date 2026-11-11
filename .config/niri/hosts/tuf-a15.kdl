@@ -18,8 +18,8 @@ debug {
     render-drm-device "/dev/dri/by-path/pci-0000:05:00.0-render"
 }
 
-// NVIDIA GPU: niri leaves it alone by default, so it never keeps it awake and
-// `gpu-mode eco|hybrid` switches without logging out. The cost: no HDMI (it is
-// wired to the NVIDIA GPU; USB-C displays work). `gpu-mode hdmi on|off` writes
-// ../nvidia.kdl (not tracked; created by ~/.setup/tuf-a15.sh), then log out and in.
+// NVIDIA GPU: in hybrid niri opens it for the HDMI port (as KWin did); in eco
+// it's gone. `gpu-mode hdmi off` makes niri never open it (../nvidia.kdl, not
+// tracked): no HDMI, but eco then always switches at once. `gpu-mode hdmi auto`
+// undoes that. Both from the next login.
 include optional=true "nvidia.kdl"
