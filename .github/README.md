@@ -208,7 +208,7 @@ Rule of thumb: **pacman** for the system and CLI tools the shell needs, **mise**
 - **Login screen:** greetd + Noctalia greeter (niri) / GDM (GNOME).
 - **Bitwarden** added to autostart (its SSH agent must be running).
 - **GNOME:** `adw-gtk3` theme for GTK3 apps, `Super+Return` opens Ghostty.
-- **niri:** links `~/.config/niri/host.kdl` to this machine's file, checks both configs, enables `noctalia.service`, sets the GTK and Qt (qt6ct) look, links the dark/light wallpapers.
+- **niri:** links `~/.config/niri/host.kdl` to this machine's file, checks both configs, enables `noctalia.service`, sets the GTK and Qt (qt6ct) look, downloads the default dark/light wallpapers.
 - **Shell:** login shell switched to zsh.
 - Then the machine script, `~/.setup/$(hostname).sh`.
 
@@ -258,7 +258,7 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 
 **Colors from the wallpaper:** pick a wallpaper (bar or launcher `/wall`) and Noctalia recolors itself, niri's borders, GTK, Qt (qt6ct), Ghostty and btop. Change the style with `wallpaper_scheme` in `config.toml`.
 
-**Dark and light:** the bar's dark/light button (or `noctalia msg theme-mode-toggle`) switches the colors **and the wallpaper**. Each mode has its own folder, `~/Pictures/Wallpapers/Dark` and `Light`, filled with GNOME's matched pairs (`gnome-backgrounds`); add your own images there too. Defaults: Adwaita dark / light. The wallpaper you pick in a mode is remembered for that mode (`~/.local/bin/wallpaper-mode`, run by Noctalia's `theme_mode_changed` hook).
+**Dark and light:** the bar's dark/light button (or `noctalia msg theme-mode-toggle`) switches the colors **and the wallpaper**. Each mode has its own folder, `~/Pictures/Wallpapers/Dark` and `Light` (not tracked). Defaults, downloaded by `install.sh niri` from [Wallhaven](https://wallhaven.cc): dark [`5y3q31`](https://wallhaven.cc/w/5y3q31) (Milky Way over a mountain lake), light [`e89l8k`](https://wallhaven.cc/w/e89l8k) (clouds). For more, the bar's Wallhaven button (official `noctalia/wallhaven` plugin) searches Wallhaven (try `nature`, `forest`, `mountains`), previews, and **Apply** saves into the current mode's folder. Your own images can go in the folders too. The wallpaper you pick in a mode is remembered for that mode (`~/.local/bin/wallpaper-mode`, run by Noctalia's `theme_mode_changed` hook).
 
 **Keys** (`Mod+Shift+/` shows them all). Shift moves, Ctrl is workspaces, Alt is monitors; arrows work like H/J/K/L.
 
@@ -501,7 +501,7 @@ Flatpak cursor wrong? `flatpak --user override --filesystem=xdg-data/icons:ro` (
 | `ssh-add -L`: "Could not open a connection" | Is Bitwarden running and unlocked, with Settings > SSH agent on? `echo $SSH_AUTH_SOCK` should be `~/.bitwarden-ssh-agent.sock` (log out and in once after changing environment.d) |
 | `gh`: "token is invalid" | `secret-tool search service gh:github.com` (is gnome-keyring unlocked?), then `gh auth login` |
 | niri: bar missing | `systemctl --user status noctalia.service`; `journalctl --user -u noctalia -b` |
-| niri: config error banner | `niri validate`, `noctalia config validate` |
+| niri: config error banner | `niri validate`, `noctalia config validate` (it warns about plugin widgets like `wallhaven`: the offline check doesn't load plugins; harmless) |
 | Brightness slider does nothing | `ls /sys/class/backlight/`: should show `amdgpu_bl*`; check `acpi_backlight=native` in `/etc/kernel/cmdline` |
 | NVIDIA never sleeps | `runtime_status` (above); `fuser -v /dev/nvidia*`; is `libva-nvidia-driver` back? In hybrid it is the firmware bug: use `gpu-mode eco` |
 | Kernel option not applied | `cat /proc/cmdline`; after editing `/etc/kernel/cmdline` run `sudo mkinitcpio -P` (see [Kernel options](#kernel-options)) |

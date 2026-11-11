@@ -181,21 +181,23 @@ if [ "$de" = niri ]; then
     noctalia config validate
     mkdir -p "$HOME/Pictures/Screenshots"
 
-    # Wallpapers: GNOME's matched dark/light pairs (gnome-backgrounds), linked
-    # into Dark/ and Light/ (Noctalia's per-mode picker folders). Default pair:
-    # Adwaita. Your own images can go in the same folders.
-    for mode in Dark Light; do
-        mkdir -p "$HOME/Pictures/Wallpapers/$mode"
-        case $mode in Dark) suffix=d ;; Light) suffix=l ;; esac
-        for f in /usr/share/backgrounds/gnome/*-"$suffix".jxl; do
-            [ -e "$f" ] && ln -sfn "$f" "$HOME/Pictures/Wallpapers/$mode/${f##*/}"
-        done
-    done
+    # Wallpapers: a nature default per mode, from Wallhaven (more in Noctalia's
+    # Wallhaven panel, which saves into the folder of the current mode).
+    #   Dark:  5y3q31, Milky Way over a mountain lake (Unsplash photo)
+    #   Light: e89l8k, clouds on a blue sky
+    get_wallpaper() {
+        [ -s "$2" ] && return 0
+        mkdir -p "${2%/*}"
+        curl -fsSL -o "$2.part" "$1" && mv "$2.part" "$2" || echo "!! could not download $1"
+    }
+    w="$HOME/Pictures/Wallpapers"
+    get_wallpaper https://w.wallhaven.cc/full/5y/wallhaven-5y3q31.jpg "$w/Dark/wallhaven-5y3q31.jpg"
+    get_wallpaper https://w.wallhaven.cc/full/e8/wallhaven-e89l8k.jpg "$w/Light/wallhaven-e89l8k.jpg"
     # Defaults for ~/.local/bin/wallpaper-mode; your later picks replace them.
     state="$HOME/.local/state/wallpaper-mode"
     mkdir -p "$state"
-    [ -s "$state/dark" ] || echo "$HOME/Pictures/Wallpapers/Dark/adwaita-d.jxl" >"$state/dark"
-    [ -s "$state/light" ] || echo "$HOME/Pictures/Wallpapers/Light/adwaita-l.jxl" >"$state/light"
+    [ -s "$state/dark" ] || echo "$w/Dark/wallhaven-5y3q31.jpg" >"$state/dark"
+    [ -s "$state/light" ] || echo "$w/Light/wallhaven-e89l8k.jpg" >"$state/light"
 
     # Noctalia runs as a user service started with niri (not in other desktops).
     systemctl --user daemon-reload

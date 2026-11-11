@@ -36,10 +36,11 @@ input_path = "templates/ghostty-colors"
 output_path = "~/.config/ghostty/noctalia-colors"   # read via `config-file = ?noctalia-colors`
 post_hook = "bash /usr/share/noctalia/assets/templates/ghostty/reload.sh"
 
-# Dark and light wallpapers: GNOME's matched pairs (gnome-backgrounds), linked
-# into these folders by install.sh niri. Switching dark/light (bar button, or
-# `noctalia msg theme-mode-toggle`) swaps the wallpaper too, through the hook
-# below; the one you pick in each mode is remembered (~/.local/bin/wallpaper-mode).
+# Dark and light wallpapers: one folder each, with a nature default downloaded
+# by install.sh niri. Switching dark/light (bar button, or `noctalia msg
+# theme-mode-toggle`) swaps the wallpaper too, through the hook below; the one
+# you pick in each mode is remembered (~/.local/bin/wallpaper-mode). More from
+# the Wallhaven panel (bar button), saved into the current mode's folder.
 [wallpaper]
 directory = "~/Pictures/Wallpapers"
 directory_dark = "~/Pictures/Wallpapers/Dark"
@@ -47,10 +48,14 @@ directory_light = "~/Pictures/Wallpapers/Light"
 fill_mode = "crop"
 
 [wallpaper.default]
-path = "~/Pictures/Wallpapers/Dark/adwaita-d.jxl"
+path = "~/Pictures/Wallpapers/Dark/wallhaven-5y3q31.jpg"
 
 [hooks]
 theme_mode_changed = "wallpaper-mode"
+
+# Official plugins (github.com/noctalia-dev/official-plugins), fetched on enable.
+[plugins]
+enabled = ["noctalia/wallhaven"]
 
 # ── Bar: thin, flat, full width along the top edge ──────────────────────────
 
@@ -66,7 +71,11 @@ compositor_blur = false
 capsule = false
 start = ["launcher", "workspaces", "active_window"]
 center = ["clock"]
-end = ["media", "tray", "notifications", "clipboard", "theme_mode", "power_profile", "charge-limit", "network", "bluetooth", "volume", "brightness", "battery", "control-center", "session"]
+end = ["media", "tray", "notifications", "clipboard", "theme_mode", "wallhaven", "power_profile", "charge-limit", "network", "bluetooth", "volume", "brightness", "battery", "control-center", "session"]
+
+# Wallhaven browser: search (e.g. "nature"), preview, Apply.
+[widget.wallhaven]
+type = "noctalia/wallhaven:wallhaven"
 
 # Click: stop charging at 90% <-> charge to 100% (UPower; ~/.local/bin/charge-limit).
 [widget.charge-limit]
