@@ -286,7 +286,9 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 
 **Default apps:** Nautilus, Papers, Loupe, Text Editor, Showtime, Decibels (set by `install.sh niri` with `xdg-mime`). **File dialogs** come from the GTK portal (`~/.config/xdg-desktop-portal/niri-portals.conf`): the GNOME one starts Nautilus first and is slow.
 
-**Secrets:** gnome-keyring, unlocked at login by the login screen's PAM module (added to greetd's by `install.sh niri`).
+**Secrets:** gnome-keyring. With autologin (default) it starts locked and asks for your password once per boot, the first time an app needs a secret (Bitwarden, right after login). Through the login screen, the password typed there unlocks it (PAM, added to greetd's by `install.sh niri`).
+
+**Night Light:** on, 4000 K from 19:30 to 07:00, fading over an hour (`[nightlight]` and `[location]` in `config.toml`; fixed times, no location lookup). Control center button: on/off; right-click: warm all the time.
 
 **Password apps** (Bitwarden, Ente Auth, KeePassXC) are black in screen sharing and automatic screenshots; notifications are hidden from screen sharing.
 
@@ -302,6 +304,8 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 3. Bitwarden: copy a password, open `Mod+V`. If it is in the history, tell Noctalia to skip it.
 
 ### niri: login screen
+
+**Autologin:** greetd starts niri for you once per boot, without a password; the disk password at boot is the gate, and the lock screen still needs your password. Logging out shows the greeter. Turn it off: `autologin=no ~/.setup/install.sh niri`.
 
 `install.sh niri` sets up **greetd** with **Noctalia's greeter** (`/etc/greetd/config.toml`, original kept as `config.toml.orig`), adds gnome-keyring to `/etc/pam.d/greetd` so the login password unlocks it, and makes greetd the login screen from the next boot.
 

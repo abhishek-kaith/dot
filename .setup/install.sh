@@ -114,18 +114,29 @@ sudo systemctl enable --now bluetooth.service cups.socket fstrim.timer paccache.
 # "Installation"). Arch's greetd PAM file has no gnome-keyring line, so it is
 # added: the login password then unlocks the keyring.
 if [ "$de" = niri ]; then
+    # Autologin: greetd starts niri for $USER once per boot, with no password
+    # (the disk password at boot is the gate). Logging out shows the greeter.
+    # gnome-keyring then starts locked and asks for your password once, the
+    # first time an app needs a secret. No autologin: autologin=no ./install.sh niri
     cmd=/usr/bin/noctalia-greeter-session
-    if ! grep -q "^command = \"$cmd\"" /etc/greetd/config.toml 2>/dev/null; then
-        [ -f /etc/greetd/config.toml.orig ] || sudo cp /etc/greetd/config.toml /etc/greetd/config.toml.orig
-        sudo tee /etc/greetd/config.toml >/dev/null <<EOF
-# Written by ~/.setup/install.sh niri (original: config.toml.orig).
+    want="# Written by ~/.setup/install.sh niri (original: config.toml.orig).
 [terminal]
 vt = 1
 
 [default_session]
-command = "$cmd"
-user = "greeter"
-EOF
+command = \"$cmd\"
+user = \"greeter\""
+    if [ "${autologin:-yes}" = yes ]; then
+        want="$want
+
+[initial_session]
+command = \"niri-session\"
+user = \"$USER\""
+    fi
+    if [ "$(cat /etc/greetd/config.toml 2>/dev/null)" != "$want" ]; then
+        [ -f /etc/greetd/config.toml.orig ] || sudo cp /etc/greetd/config.toml /etc/greetd/config.toml.orig
+        printf '%s\n' "$want" | sudo tee /etc/greetd/config.toml >/dev/null
+        echo "  greetd: autologin ${autologin:-yes}"
     fi
     pam=/etc/pam.d/greetd
     grep -q '^auth.*pam_gnome_keyring' "$pam" ||
