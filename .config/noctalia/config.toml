@@ -1,0 +1,78 @@
+# Noctalia 5.4.1 (Arch extra). Hand-written settings, tracked in the dotfiles.
+# Changes made in the Settings window go to ~/.local/state/noctalia/settings.toml
+# instead (not tracked) and win over this file; copy keepers back here.
+# Check after editing: noctalia config validate
+# Every default, with comments: /usr/share/doc/noctalia or github.com/noctalia-dev/noctalia/blob/v5.4.1/example.toml
+
+[shell]
+font_family = "Inter"
+corner_radius_scale = 0.5            # 0 square ... 1 default; matches the square windows
+polkit_agent = true                  # password prompts for pacman GUIs, disks, etc.
+niri_overview_type_to_launch_enabled = true   # type in niri's overview to search apps
+# Apps started from the launcher, dock or taskbar run as their own systemd services:
+# systemd-oomd then kills only the app using too much memory, and restarting
+# Noctalia doesn't close them. Needs noctalia.service (it is).
+launch_apps_as_systemd_services = true
+
+[shell.launcher]
+pinned = ["ghostty", "app.zen_browser.zen", "org.gnome.Nautilus"]
+
+# ── Look: colors from the wallpaper ─────────────────────────────────────────
+
+[theme]
+mode = "dark"
+source = "wallpaper"                 # builtin | wallpaper | community
+wallpaper_scheme = "m3-content"      # m3-tonal-spot | m3-content | vibrant | faithful | muted | ...
+pure_black_dark = true               # true black background
+
+[theme.templates]
+# Recolored on every wallpaper change. Ghostty uses the user template below,
+# so Noctalia never edits the tracked ghostty config.
+builtin_ids = ["niri", "gtk3", "gtk4", "qt", "btop"]
+enable_community_templates = false
+
+[theme.templates.user.ghostty-colors]
+input_path = "templates/ghostty-colors"
+output_path = "~/.config/ghostty/noctalia-colors"   # read via `config-file = ?noctalia-colors`
+post_hook = "bash /usr/share/noctalia/assets/templates/ghostty/reload.sh"
+
+[wallpaper]
+directory = "~/Pictures/Wallpapers"
+fill_mode = "crop"
+
+# ── Bar: thin, flat, full width along the top edge ──────────────────────────
+
+[bar.main]
+position = "top"
+thickness = 26
+radius = 0
+margin_ends = 0
+margin_edge = 0
+padding = 8
+shadow = false
+compositor_blur = false
+capsule = false
+start = ["launcher", "workspaces", "active_window"]
+center = ["clock"]
+end = ["media", "tray", "notifications", "clipboard", "power_profile", "charge-limit", "network", "bluetooth", "volume", "brightness", "battery", "control-center", "session"]
+
+# Click: stop charging at 90% <-> charge to 100% (UPower; ~/.local/bin/charge-limit).
+[widget.charge-limit]
+type = "custom_button"
+glyph = "battery-charging"
+tooltip = "Battery limit: click to switch between 90% and 100%"
+
+[widget.charge-limit.actions]
+left = "exec charge-limit toggle"
+
+# ── Lock and idle (both off by default in Noctalia) ─────────────────────────
+
+[idle.behavior.lock]
+enabled = true
+timeout = 600                        # lock after 10 min idle
+action = "lock"
+
+[idle.behavior.screen-off]
+enabled = true
+timeout = 660                        # screen off a minute later
+action = "screen_off"

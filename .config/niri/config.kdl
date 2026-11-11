@@ -1,0 +1,293 @@
+// niri 26.04: scrolling tiling. Shared by every machine; per-machine screens,
+// GPU and refresh rate live in hosts/<hostname>.kdl, linked to host.kdl by
+// ~/.setup/install.sh niri. Check after editing: niri validate
+// Docs: https://github.com/YaLTeR/niri/wiki (pick the 26.04 version)
+//
+// The shell (bar, launcher, notifications, lock, idle, polkit, wallpaper) is
+// Noctalia, started by ~/.config/systemd/user/noctalia.service.
+
+input {
+    keyboard {
+        xkb {
+        }
+        repeat-delay 300
+        repeat-rate 40
+        numlock
+    }
+    touchpad {
+        tap
+        natural-scroll
+        dwt                     // ignore the touchpad while typing
+    }
+    // Moving the mouse onto a window does not focus it; clicking does.
+    warp-mouse-to-focus         // keyboard focus moves bring the pointer along
+}
+
+layout {
+    // Small even gaps, square corners, thin border: the bar sits flat on top.
+    gaps 6
+    center-focused-column "never"
+    background-color "transparent"
+
+    preset-column-widths {
+        proportion 0.33333
+        proportion 0.5
+        proportion 0.66667
+        proportion 1.0
+    }
+    default-column-width { proportion 0.5; }
+
+    focus-ring {
+        off
+    }
+    border {
+        width 2
+        // Colors come from the wallpaper: noctalia.kdl (included below).
+        active-color "#7fc8ff"
+        inactive-color "#303030"
+        urgent-color "#cc3333"
+    }
+    shadow {
+        off
+    }
+    tab-indicator {
+        hide-when-single-tab
+        place-within-column
+    }
+}
+
+// Apps draw no title bars of their own (GTK apps follow this): flat windows.
+prefer-no-csd
+
+cursor {
+    xcursor-theme "Adwaita"
+    xcursor-size 24
+    hide-when-typing
+}
+
+// Started by niri for apps it spawns (keybinds). The same values are pushed to
+// the systemd user manager for the niri session only, so apps started from
+// Noctalia get them too (~/.config/systemd/user/niri.service.d/session-env.conf).
+environment {
+    QT_QPA_PLATFORMTHEME "qt6ct"
+}
+
+hotkey-overlay {
+    skip-at-startup
+}
+
+screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
+
+animations {
+    slowdown 0.8
+}
+
+overview {
+    zoom 0.5
+}
+
+// ── window rules ────────────────────────────────────────────────────────────
+
+// Password apps never show up in screen sharing or automatic screenshots.
+// niri's own interactive screenshot (Print) still shows them, on purpose.
+window-rule {
+    match app-id="^Bitwarden$"
+    match app-id=r#"^io\.ente\.auth$"#
+    match app-id=r#"^org\.keepassxc\.KeePassXC$"#
+    block-out-from "screen-capture"
+}
+
+// Picture-in-Picture floats in the bottom-right corner.
+window-rule {
+    match title=r#"^[Pp]icture[- ][Ii]n[- ][Pp]icture$"#
+    open-floating true
+    default-floating-position x=24 y=24 relative-to="bottom-right"
+}
+
+// Small helper windows float instead of taking a column.
+window-rule {
+    match app-id=r#"^pinentry"#
+    match app-id=r#"^org\.gnome\.Calculator$"#
+    match app-id=r#"^gcr-prompter$"#
+    match app-id=r#"^jetbrains-"# title="^splash$"
+    open-floating true
+}
+
+// Noctalia's settings window (Noctalia docs, niri page).
+window-rule {
+    match app-id=r#"^dev\.noctalia\.Noctalia$"#
+    open-floating true
+    default-column-width { fixed 1080; }
+    default-window-height { fixed 920; }
+}
+
+// Notifications can carry OTP codes: keep them out of screen sharing.
+layer-rule {
+    match namespace="^noctalia-notification"
+    block-out-from "screencast"
+}
+
+// ── keys ────────────────────────────────────────────────────────────────────
+// i3/sway style with Vim keys; arrows do the same as H/J/K/L.
+// Shift = move, Ctrl = workspaces, Alt = monitors.  Mod+Shift+/ lists all keys.
+// Alt+Tab / Mod+Tab: niri's own recent-windows switcher (on by default).
+
+binds {
+    Mod+Shift+Slash { show-hotkey-overlay; }
+
+    // apps
+    Mod+Return hotkey-overlay-title="Terminal: ghostty" { spawn "ghostty"; }
+    Mod+T      hotkey-overlay-title=null { spawn "ghostty"; }
+    Mod+B      hotkey-overlay-title="Browser: Zen" { spawn "flatpak" "run" "app.zen_browser.zen"; }
+    Mod+E      hotkey-overlay-title="Files" { spawn "nautilus" "--new-window"; }
+
+    // Noctalia
+    Mod+D      hotkey-overlay-title="Launcher" { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
+    Mod+Space  hotkey-overlay-title=null { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
+    Mod+S      hotkey-overlay-title="Control center" { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
+    Mod+V      hotkey-overlay-title="Clipboard history" { spawn "noctalia" "msg" "panel-toggle" "clipboard"; }
+    Mod+Shift+Comma hotkey-overlay-title="Noctalia settings" { spawn "noctalia" "msg" "settings-toggle"; }
+    Ctrl+Alt+L hotkey-overlay-title="Lock" { spawn "noctalia" "msg" "session" "lock"; }
+
+    XF86AudioRaiseVolume allow-when-locked=true { spawn "noctalia" "msg" "volume-up"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn "noctalia" "msg" "volume-down"; }
+    XF86AudioMute        allow-when-locked=true { spawn "noctalia" "msg" "volume-mute"; }
+    XF86AudioMicMute     allow-when-locked=true { spawn "noctalia" "msg" "mic-mute"; }
+    XF86MonBrightnessUp   allow-when-locked=true { spawn "noctalia" "msg" "brightness-up"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn "noctalia" "msg" "brightness-down"; }
+    XF86AudioPlay  allow-when-locked=true { spawn "playerctl" "play-pause"; }
+    XF86AudioPause allow-when-locked=true { spawn "playerctl" "play-pause"; }
+    XF86AudioStop  allow-when-locked=true { spawn "playerctl" "stop"; }
+    XF86AudioPrev  allow-when-locked=true { spawn "playerctl" "previous"; }
+    XF86AudioNext  allow-when-locked=true { spawn "playerctl" "next"; }
+
+    // windows
+    Mod+Q       repeat=false { close-window; }
+    Mod+Shift+Q repeat=false { close-window; }
+    Alt+F4      repeat=false { close-window; }
+    Mod+O       repeat=false { toggle-overview; }
+
+    // focus: H/L columns; J/K windows, running on into the next workspace
+    Mod+H     { focus-column-left; }
+    Mod+L     { focus-column-right; }
+    Mod+J     { focus-window-or-workspace-down; }
+    Mod+K     { focus-window-or-workspace-up; }
+    Mod+Left  { focus-column-left; }
+    Mod+Right { focus-column-right; }
+    Mod+Down  { focus-window-or-workspace-down; }
+    Mod+Up    { focus-window-or-workspace-up; }
+    Mod+Home  { focus-column-first; }
+    Mod+End   { focus-column-last; }
+
+    // move (Shift)
+    Mod+Shift+H     { move-column-left; }
+    Mod+Shift+L     { move-column-right; }
+    Mod+Shift+J     { move-window-down-or-to-workspace-down; }
+    Mod+Shift+K     { move-window-up-or-to-workspace-up; }
+    Mod+Shift+Left  { move-column-left; }
+    Mod+Shift+Right { move-column-right; }
+    Mod+Shift+Down  { move-window-down-or-to-workspace-down; }
+    Mod+Shift+Up    { move-window-up-or-to-workspace-up; }
+    Mod+Shift+Home  { move-column-to-first; }
+    Mod+Shift+End   { move-column-to-last; }
+
+    // workspaces (Ctrl): straight up/down, and Ctrl+Shift takes the column along
+    Mod+Ctrl+J          { focus-workspace-down; }
+    Mod+Ctrl+K          { focus-workspace-up; }
+    Mod+Ctrl+Down       { focus-workspace-down; }
+    Mod+Ctrl+Up         { focus-workspace-up; }
+    Mod+Page_Down       { focus-workspace-down; }
+    Mod+Page_Up         { focus-workspace-up; }
+    Mod+Ctrl+Shift+J    { move-column-to-workspace-down; }
+    Mod+Ctrl+Shift+K    { move-column-to-workspace-up; }
+    Mod+Ctrl+Shift+Down { move-column-to-workspace-down; }
+    Mod+Ctrl+Shift+Up   { move-column-to-workspace-up; }
+    Mod+Ctrl+Page_Down  { move-workspace-down; }
+    Mod+Ctrl+Page_Up    { move-workspace-up; }
+
+    Mod+1 { focus-workspace 1; }
+    Mod+2 { focus-workspace 2; }
+    Mod+3 { focus-workspace 3; }
+    Mod+4 { focus-workspace 4; }
+    Mod+5 { focus-workspace 5; }
+    Mod+6 { focus-workspace 6; }
+    Mod+7 { focus-workspace 7; }
+    Mod+8 { focus-workspace 8; }
+    Mod+9 { focus-workspace 9; }
+    Mod+Shift+1 { move-column-to-workspace 1; }
+    Mod+Shift+2 { move-column-to-workspace 2; }
+    Mod+Shift+3 { move-column-to-workspace 3; }
+    Mod+Shift+4 { move-column-to-workspace 4; }
+    Mod+Shift+5 { move-column-to-workspace 5; }
+    Mod+Shift+6 { move-column-to-workspace 6; }
+    Mod+Shift+7 { move-column-to-workspace 7; }
+    Mod+Shift+8 { move-column-to-workspace 8; }
+    Mod+Shift+9 { move-column-to-workspace 9; }
+
+    // monitors (Alt)
+    Mod+Alt+H           { focus-monitor-left; }
+    Mod+Alt+J           { focus-monitor-down; }
+    Mod+Alt+K           { focus-monitor-up; }
+    Mod+Alt+L           { focus-monitor-right; }
+    Mod+Alt+Shift+H     { move-column-to-monitor-left; }
+    Mod+Alt+Shift+J     { move-column-to-monitor-down; }
+    Mod+Alt+Shift+K     { move-column-to-monitor-up; }
+    Mod+Alt+Shift+L     { move-column-to-monitor-right; }
+
+    // mouse wheel
+    Mod+WheelScrollDown      cooldown-ms=150 { focus-workspace-down; }
+    Mod+WheelScrollUp        cooldown-ms=150 { focus-workspace-up; }
+    Mod+Ctrl+WheelScrollDown cooldown-ms=150 { move-column-to-workspace-down; }
+    Mod+Ctrl+WheelScrollUp   cooldown-ms=150 { move-column-to-workspace-up; }
+    Mod+WheelScrollRight      { focus-column-right; }
+    Mod+WheelScrollLeft       { focus-column-left; }
+    Mod+Shift+WheelScrollDown { focus-column-right; }
+    Mod+Shift+WheelScrollUp   { focus-column-left; }
+
+    // columns
+    Mod+BracketLeft  { consume-or-expel-window-left; }
+    Mod+BracketRight { consume-or-expel-window-right; }
+    Mod+Comma        { consume-window-into-column; }
+    Mod+Period       { expel-window-from-column; }
+    Mod+W            { toggle-column-tabbed-display; }
+
+    // sizes
+    Mod+R            { switch-preset-column-width; }
+    Mod+Shift+R      { switch-preset-column-width-back; }
+    Mod+Ctrl+R       { reset-window-height; }
+    Mod+Ctrl+Shift+R { switch-preset-window-height; }
+    Mod+F            { maximize-column; }
+    Mod+Shift+F      { fullscreen-window; }
+    Mod+M            { maximize-window-to-edges; }
+    Mod+Ctrl+F       { expand-column-to-available-width; }
+    Mod+C            { center-column; }
+    Mod+Ctrl+C       { center-visible-columns; }
+    Mod+Minus        { set-column-width "-10%"; }
+    Mod+Equal        { set-column-width "+10%"; }
+    Mod+Shift+Minus  { set-window-height "-10%"; }
+    Mod+Shift+Equal  { set-window-height "+10%"; }
+
+    // floating
+    Mod+Shift+Space { toggle-window-floating; }
+    Mod+Ctrl+Space  { switch-focus-between-floating-and-tiling; }
+
+    // screenshots: niri's own UI (password windows stay hidden from the automatic ones)
+    Print       { screenshot; }
+    Mod+Shift+S { screenshot; }
+    Ctrl+Print  { screenshot-screen; }
+    Alt+Print   { screenshot-window; }
+
+    // session
+    Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
+    Mod+Shift+E { quit; }
+    Ctrl+Alt+Delete { quit; }
+    Mod+Shift+P { power-off-monitors; }
+}
+
+// Wallpaper colors for borders, tabs and Alt+Tab, written by Noctalia.
+// Generated, not tracked: missing until Noctalia first runs.
+include optional=true "noctalia.kdl"
+
+// This machine's screens and GPU: a link to hosts/<hostname>.kdl.
+// Last, so it can override anything above.
+include optional=true "host.kdl"

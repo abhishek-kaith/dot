@@ -1,0 +1,30 @@
+# niri (scrolling tiling) + Noctalia v5 shell, with GNOME apps. All from Arch's
+# repos: no AUR. Config: ~/.config/niri, ~/.config/noctalia.
+# The login screen is not changed when one exists (Plasma's keeps working and
+# lists niri); gnome-keyring is unlocked at login by its PAM module.
+
+niri                          # compositor; Alt+Tab, overview and screenshots built in
+noctalia                      # bar, launcher, notifications, lock, idle, polkit, wallpaper
+xwayland-satellite            # X11 apps (niri starts it on demand)
+xdg-desktop-portal-gnome      # screen sharing + file dialogs (niri's portal choice)
+gnome-keyring seahorse        # app secrets (gh, Chromium, Flatpaks); seahorse = viewer
+kdeconnect                    # phone link; GSConnect needs GNOME Shell
+playerctl                     # media keys
+libnotify                     # notify-send (charge-limit)
+system-config-printer         # printers
+
+# look: GTK and Qt both follow the wallpaper colors through Noctalia templates
+adw-gtk-theme                 # GTK3 apps match libadwaita
+qt6ct                         # Qt apps: colors, font, icons
+inter-font                    # UI font
+papirus-icon-theme            # icons: Papirus-Dark
+
+# GNOME apps
+nautilus sushi file-roller gvfs-mtp gvfs-smb
+loupe papers gnome-text-editor gnome-calculator
+gnome-disk-utility baobab
+showtime                      # video (GNOME's default); mpv for heavy files
+celluloid                     # video with more controls (mpv inside)
+amberol                       # music: plays folders, no library
+decibels                      # opens single audio files
+snapshot                      # camera

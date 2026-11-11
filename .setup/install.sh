@@ -1,6 +1,6 @@
 #!/bin/sh
 # Set up this machine after a minimal archinstall.
-#   ~/.setup/install.sh kde      or      ~/.setup/install.sh gnome
+#   ~/.setup/install.sh kde   |   ~/.setup/install.sh gnome   |   ~/.setup/install.sh niri
 # Safe to re-run: every step skips what is already done.
 set -eu
 
@@ -8,7 +8,10 @@ de=${1:-}
 case $de in
     kde) dm=plasmalogin.service ;;
     gnome) dm=gdm.service ;;
-    *) echo "usage: $0 kde|gnome" >&2; exit 1 ;;
+    # niri keeps the login screen already there (it lists the niri session).
+    # A fresh niri-only machine has none: see "niri: login screen" in ~/.github/README.md.
+    niri) dm= ;;
+    *) echo "usage: $0 kde|gnome|niri" >&2; exit 1 ;;
 esac
 
 dir=$(cd "$(dirname "$0")" && pwd)
@@ -90,6 +93,17 @@ vm.page-cluster = 0
 EOF
 sudo sysctl -q --system
 
+say "systemd-oomd (kill the app using too much memory before the system freezes)"
+# Fedora's defaults (package systemd-oomd-defaults): kill under sustained memory
+# pressure in user sessions, or when swap (zram) is nearly full. It kills one
+# cgroup: an app started from niri or Noctalia, not the whole session.
+sudo mkdir -p /etc/systemd/system/user@.service.d /etc/systemd/system/-.slice.d
+printf '[Service]\nManagedOOMMemoryPressure=kill\nManagedOOMMemoryPressureLimit=50%%\n' |
+    sudo tee /etc/systemd/system/user@.service.d/10-oomd.conf >/dev/null
+printf '[Slice]\nManagedOOMSwap=kill\n' | sudo tee /etc/systemd/system/-.slice.d/10-oomd.conf >/dev/null
+sudo systemctl daemon-reload
+sudo systemctl enable --now systemd-oomd.service
+
 say "SSD TRIM"
 root=$(findmnt -no SOURCE /)
 luks_discard "${root#/dev/mapper/}"
@@ -97,7 +111,13 @@ luks_discard "${root#/dev/mapper/}"
 say "services"
 sudo systemctl enable --now bluetooth.service cups.socket fstrim.timer paccache.timer reflector.timer
 # Keep a login screen that is already set up; only enable one on a fresh install.
-[ -e /etc/systemd/system/display-manager.service ] || sudo systemctl enable "$dm"
+if [ ! -e /etc/systemd/system/display-manager.service ]; then
+    if [ -n "$dm" ]; then
+        sudo systemctl enable "$dm"
+    else
+        echo "!! no login screen: see \"niri: login screen\" in ~/.github/README.md"
+    fi
+fi
 # Except SDDM on KDE (archinstall's pick): its X11 greeter leaves an Xorg running
 # after login, which keeps the NVIDIA GPU awake. Plasma Login Manager is Wayland.
 if [ "$de" = kde ] && [ "$(readlink /etc/systemd/system/display-manager.service)" = /usr/lib/systemd/system/sddm.service ]; then
@@ -291,6 +311,53 @@ if [ "$de" = kde ]; then
     else
         echo "!! not inside a Plasma session: log in once, then re-run '$0 kde' to finish the theme"
     fi
+elif [ "$de" = niri ]; then
+    # Config is in the dotfiles (~/.config/niri, ~/.config/noctalia); this links
+    # this machine's screen/GPU file and turns on the session services.
+    if [ -f "$HOME/.config/niri/hosts/$host.kdl" ]; then
+        ln -sfn "hosts/$host.kdl" "$HOME/.config/niri/host.kdl"
+        echo "  niri: host.kdl -> hosts/$host.kdl"
+    else
+        echo "!! no ~/.config/niri/hosts/$host.kdl: niri uses its screen defaults"
+    fi
+    niri validate
+    noctalia config validate
+    mkdir -p "$HOME/Pictures/Wallpapers" "$HOME/Pictures/Screenshots"
+
+    # Noctalia runs as a user service started with niri (never in Plasma).
+    systemctl --user daemon-reload
+    systemctl --user enable noctalia.service
+
+    # GTK look; Noctalia adds the wallpaper colors on top (gtk.css import).
+    # dconf is shared with Plasma, which rewrites these when you log into it.
+    if [ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
+        gsettings set org.gnome.desktop.interface gtk-theme adw-gtk3-dark
+        gsettings set org.gnome.desktop.interface color-scheme prefer-dark
+        gsettings set org.gnome.desktop.interface icon-theme Papirus-Dark
+        gsettings set org.gnome.desktop.interface cursor-theme Adwaita
+        gsettings set org.gnome.desktop.interface cursor-size 24
+        gsettings set org.gnome.desktop.interface font-name "Inter 10"
+        gsettings set org.gnome.desktop.interface monospace-font-name "JetBrainsMono Nerd Font 10"
+    else
+        echo "!! no desktop session: log in once, then re-run '$0 niri' for the GTK settings"
+    fi
+
+    # Qt look (qt6ct): Noctalia writes colors/noctalia.conf on every wallpaper
+    # change. Only a starting config; qt6ct's own window edits it afterwards.
+    if [ ! -e "$HOME/.config/qt6ct/qt6ct.conf" ]; then
+        mkdir -p "$HOME/.config/qt6ct"
+        cat > "$HOME/.config/qt6ct/qt6ct.conf" <<EOF
+[Appearance]
+color_scheme_path=$HOME/.config/qt6ct/colors/noctalia.conf
+custom_palette=true
+icon_theme=Papirus-Dark
+style=Fusion
+
+[Fonts]
+fixed="JetBrainsMono Nerd Font,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
+general="Inter,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
+EOF
+    fi
 elif [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
     echo "!! not inside a GNOME session: log in once, then re-run '$0 gnome' to apply settings"
 else
@@ -313,11 +380,33 @@ else
     say "no $host.sh: skipping machine-specific setup"
 fi
 
+# Battery charge limit, through UPower: works in every desktop and is switched
+# with `charge-limit on|off|toggle` (the bar button in Noctalia). The machine's
+# script may set charge_limit; 90 otherwise. Charging restarts 5% below it
+# (only on batteries that support a start point, like the T14's).
+charge_limit=${charge_limit:-90}
+if ls /sys/class/power_supply/*/charge_control_end_threshold >/dev/null 2>&1; then
+    say "battery: stop charging at $charge_limit%"
+    hwdb=/etc/udev/hwdb.d/61-battery-local.hwdb
+    want=$(printf '# Written by ~/.setup/install.sh: UPower charge limit (start,end).\nbattery:*:*:dmi:*\n CHARGE_LIMIT=%s,%s\n' \
+        "$((charge_limit - 5))" "$charge_limit")
+    if [ "$(cat "$hwdb" 2>/dev/null)" != "$want" ]; then
+        printf '%s\n' "$want" | sudo tee "$hwdb" >/dev/null
+        sudo systemd-hwdb update
+        sudo udevadm trigger --subsystem-match=power_supply
+        sudo udevadm settle
+        sudo systemctl restart upower.service
+        sleep 2
+        # New or changed limit: turn it on. A later `charge-limit off` is kept.
+        "$HOME/.local/bin/charge-limit" on
+    fi
+fi
+
 if [ "$rebuild" = 1 ]; then
     say "rebuilding boot image (kernel options changed)"
     sudo mkinitcpio -P
 fi
 
 say "done: reboot now"
-echo "After reboot: set the battery limit in System Settings > Power (KDE),"
-echo "and see ~/.github/README.md for the per-machine checks."
+echo "Battery limit: charge-limit (on|off|toggle). See ~/.github/README.md for"
+echo "the per-machine checks."

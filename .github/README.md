@@ -1,6 +1,6 @@
 # dot
 
-My Arch Linux setup: dotfiles, kept in a **bare git repo** with `$HOME` as the work tree, and one POSIX `sh` script that turns a minimal Arch install into a working laptop for KDE Plasma or GNOME.
+My Arch Linux setup: dotfiles, kept in a **bare git repo** with `$HOME` as the work tree, and one POSIX `sh` script that turns a minimal Arch install into a working laptop for KDE Plasma, GNOME or niri (scrolling tiling, with the Noctalia shell).
 
 Machines:
 
@@ -16,6 +16,7 @@ Machines:
 - [Fresh install](#fresh-install)
 - [What gets installed](#what-gets-installed) · [Passwords, 2FA, SSH](#passwords-2fa-ssh) · [Containers](#containers-rootless-podman)
 - [Daily use](#daily-use)
+- [niri + Noctalia](#niri--noctalia)
 - [Layout](#layout)
 - [Per-machine notes](#per-machine-notes) · [Kernel options](#kernel-options)
 - [Theming: Qt, GTK, Flatpak, Electron, AppImage](#theming)
@@ -48,7 +49,7 @@ Log in on the console, connect to Wi-Fi (`nmtui`), then:
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/abhishek-kaith/dot/main/.setup/bootstrap.sh)" -- kde
 ```
 
-(`-- gnome` for GNOME.) That clones this repo into `~/.dotfiles`, checks the files out into `$HOME` (anything in the way is moved to `~/.dotfiles-backup/`), and runs `~/.setup/install.sh`.
+(`-- gnome` for GNOME, `-- niri` for niri.) That clones this repo into `~/.dotfiles`, checks the files out into `$HOME` (anything in the way is moved to `~/.dotfiles-backup/`), and runs `~/.setup/install.sh`.
 
 The same thing by hand:
 
@@ -67,8 +68,8 @@ git config --file ~/.config/git/local user.name  "Your Name"
 git config --file ~/.config/git/local user.email "you@example.com"
 ```
 
-- **Battery limit:** System Settings > Power > Advanced (KDE). 80% is a good default.
-- **Refresh rate / VRR:** System Settings > Display. Set Adaptive Sync to *Automatic*.
+- **Battery limit:** set by `install.sh` (stops at 90%, any desktop). `charge-limit off` before a trip, `charge-limit on` after. See [niri + Noctalia](#niri--noctalia).
+- **Refresh rate / VRR:** KDE: System Settings > Display, Adaptive Sync *Automatic*. niri: `~/.config/niri/hosts/<hostname>.kdl`.
 - **Bitwarden:** log in; Settings > *Enable SSH agent*, *Start to tray*, *Close to tray*. Install the Bitwarden extension in Zen and Chromium. See [Passwords, 2FA, SSH](#passwords-2fa-ssh).
 - **Ente Auth:** log in (or choose offline), turn on App lock.
 - **SSH config + public keys** (after Bitwarden is logged in):
@@ -93,6 +94,7 @@ Everything is in plain lists. Edit them, re-run `install.sh`.
 | [`common.txt`](../.setup/common.txt) | shell, CLI, apps, drivers, system services, fonts |
 | [`kde.txt`](../.setup/kde.txt) | Plasma + KDE apps |
 | [`gnome.txt`](../.setup/gnome.txt) | GNOME + GNOME apps |
+| [`niri.txt`](../.setup/niri.txt) | niri + Noctalia + GNOME apps (all from the Arch repos) |
 | [`flatpak.txt`](../.setup/flatpak.txt) | Flathub apps (per-user) |
 
 ### Apps
@@ -118,6 +120,8 @@ Everything is in plain lists. Edit them, re-run `install.sh`.
 | Camera | | Kamoso | Snapshot |
 | Screenshots | | Spectacle | built-in |
 | Phone link | | KDE Connect | GSConnect |
+
+**niri** uses the GNOME column (Showtime for video, KDE Connect for the phone), with Noctalia for the bar, notifications and lock screen.
 
 The rule: the desktop's own app for files, images, PDFs and screenshots (it matches the theme and uses the GPU); my own pick only where it matters.
 
@@ -196,6 +200,8 @@ Rule of thumb: **pacman** for the system and CLI tools the shell needs, **mise**
 
 ### System setup done by `install.sh`
 
+- **systemd-oomd:** Fedora's defaults. Under sustained memory pressure it kills the one app using too much memory, before the system freezes.
+- **Battery limit:** UPower stops charging at 90% (`charge_limit=` in a machine script changes it); `charge-limit on|off|toggle`.
 - **Services:** bluetooth, cups (printing), `fstrim.timer` (SSD TRIM), `paccache.timer` (keeps 3 old package versions for downgrades), `reflector.timer` (mirrors), `podman.socket` (user).
 - **Firewall:** `ufw`, deny incoming; KDE Connect / GSConnect ports `1714–1764` TCP+UDP open; `51413` TCP+UDP for qBittorrent (only qBittorrent listens there).
 - **qBittorrent:** starting config with fixed port `51413`, UPnP on, Web UI off ([`qBittorrent.conf`](../.setup/qBittorrent.conf)); copied only if none exists.
@@ -205,6 +211,7 @@ Rule of thumb: **pacman** for the system and CLI tools the shell needs, **mise**
 - **KDE:** KWallet on (app secrets), Ghostty as default terminal, `Meta+Return` opens Ghostty.
 - **Bitwarden** added to autostart (its SSH agent must be running).
 - **GNOME:** `adw-gtk3` theme for GTK3 apps, `Super+Return` opens Ghostty.
+- **niri:** links `~/.config/niri/host.kdl` to this machine's file, checks both configs, enables `noctalia.service`, sets the GTK and Qt (qt6ct) look.
 - **Shell:** login shell switched to zsh.
 - Then the machine script, `~/.setup/$(hostname).sh`.
 
@@ -234,6 +241,61 @@ sudo powertop                          # see real battery draw (W)
 
 Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the rest of `$HOME` is ignored.
 
+---
+
+## niri + Noctalia
+
+[niri](https://github.com/YaLTeR/niri) 26.04 scrolls windows in columns (what Karousel does on KDE); [Noctalia](https://docs.noctalia.dev/noctalia/) 5.4.1 is the shell: bar, launcher, notifications, lock, idle, polkit prompts, wallpaper. Both are in Arch's repos. Configs were checked against those exact versions (`niri validate`, `noctalia config validate`); Noctalia's website documents its development version, so check new options against `noctalia config validate`.
+
+**Files**
+
+| File | Tracked | What |
+|---|---|---|
+| `~/.config/niri/config.kdl` | ✓ | everything shared: input, layout, window rules, keys |
+| `~/.config/niri/hosts/<hostname>.kdl` | ✓ | that machine's screens, refresh rate, VRR, GPU |
+| `~/.config/niri/host.kdl` | | link to this machine's file, made by `install.sh niri` |
+| `~/.config/niri/noctalia.kdl` | | wallpaper colors for borders, written by Noctalia |
+| `~/.config/noctalia/config.toml` | ✓ | bar, theme, idle, templates |
+| `~/.local/state/noctalia/settings.toml` | | changes made in Noctalia's Settings window; win over config.toml. Copy keepers back |
+| `~/.config/ghostty/noctalia-colors` | | terminal colors from the wallpaper (`config-file = ?noctalia-colors`) |
+
+**Colors from the wallpaper:** pick a wallpaper (bar or launcher `/wall`; files in `~/Pictures/Wallpapers`) and Noctalia recolors itself, niri's borders, GTK, Qt (qt6ct), Ghostty and btop. Change the style with `wallpaper_scheme` in `config.toml`.
+
+**Keys** (`Mod+Shift+/` shows them all). Shift moves, Ctrl is workspaces, Alt is monitors; arrows work like H/J/K/L.
+
+| Key | Does |
+|---|---|
+| `Mod+Return` / `Mod+B` / `Mod+E` | Ghostty / Zen / Files |
+| `Mod+D` or `Mod+Space`, `Mod+S`, `Mod+V` | launcher, control center, clipboard history |
+| `Mod+H/L`, `Mod+J/K` | focus column; focus window, running on into the next workspace |
+| `Mod+Shift+H/J/K/L` | move column; move window (into the next workspace at the edge) |
+| `Mod+Ctrl+J/K`, `Mod+Ctrl+Shift+J/K` | go to workspace below/above; take the column along |
+| `Mod+1..9`, `Mod+Shift+1..9` | go to workspace; move column there |
+| `Mod+Alt+H/J/K/L` (+Shift) | focus monitor (move column there) |
+| `Mod+F`, `Mod+Shift+F`, `Mod+R`, `Mod+-/=` | full width, fullscreen, cycle widths, narrower/wider |
+| `Mod+W`, `Mod+[ / ]`, `Mod+C` | tabbed column, merge into / split out of a column, center |
+| `Mod+Shift+Space` | float / tile |
+| `Mod+O`, `Alt+Tab` | overview, recent windows |
+| `Print` or `Mod+Shift+S` | screenshot (pick area, window or screen) |
+| `Mod+Q`, `Ctrl+Alt+L`, `Mod+Shift+E` | close, lock, log out |
+
+**Secrets:** gnome-keyring, unlocked at login by the login screen's PAM module (Plasma Login Manager already has it). Moving from KWallet: `~/.setup/kwallet-to-keyring.py` (dry run), then `--write` from Plasma; it rewrites Chromium's, Electron apps' and Flatpak portal entries into the form each app looks up, so you stay logged in. KWallet is left as it was.
+
+**Password apps** (Bitwarden, Ente Auth, KeePassXC) are black in screen sharing and automatic screenshots; notifications are hidden from screen sharing.
+
+**Battery limit:** the bar's battery-charging button, or `charge-limit on|off|toggle`. UPower does it and remembers it, so it works the same in KDE.
+
+**Memory:** apps started from Noctalia run as their own systemd services, apps from niri keys in their own scopes, so systemd-oomd kills only the one using too much.
+
+**First login on a machine:**
+1. `niri msg outputs`: panel name, modes, VRR support. Put them in `hosts/<hostname>.kdl`.
+2. Check: `nvidia-smi` shows no niri process (tuf-a15); `secret-tool search --all` lists the secrets; Chromium is still logged in; `gh auth status`.
+3. Bitwarden: copy a password, open `Mod+V`. If it is in the history, tell Noctalia to skip it.
+
+### niri: login screen
+
+Plasma Login Manager (or GDM) lists the niri session, so keep it while KDE is installed. A fresh niri-only machine has no login screen: until one is set up, log in on the console and run `niri-session`. Later: `greetd` + `noctalia-greeter` (both in the Arch repos), see its [installation guide](https://github.com/noctalia-dev/noctalia-greeter/blob/main/docs/user/installation.md).
+
 ### Keys
 
 | Key | Does |
@@ -251,8 +313,9 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 ~/.github/README.md                    this file
 ~/.setup/
   bootstrap.sh                         clone + checkout + install (fresh machine)
-  install.sh                           ./install.sh kde|gnome
-  common.txt kde.txt gnome.txt flatpak.txt
+  install.sh                           ./install.sh kde|gnome|niri
+  common.txt kde.txt gnome.txt niri.txt flatpak.txt
+  kwallet-to-keyring.py                one-time copy of KWallet secrets into gnome-keyring
   tuf-a15.sh t14-amd.sh                  per-machine fixes (named after the hostname)
 ~/.zshenv                              every zsh: ZDOTDIR, PATH, EDITOR. Silent and tiny
 ~/.config/zsh/.zshrc                   interactive zsh
@@ -261,11 +324,15 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 ~/.config/tmux/tmux.conf
 ~/.config/nvim/                        Neovim 0.12, vim.pack, lockfile committed
 ~/.config/ghostty/                     config.ghostty + Breeze Light theme
+~/.config/niri/                        config.kdl (shared) + hosts/<hostname>.kdl
+~/.config/noctalia/                    config.toml + templates/ (wallpaper colors)
+~/.config/systemd/user/                noctalia.service, niri.service.d/session-env.conf
 ~/.config/starship.toml
 ~/.config/mise/config.toml
 ~/.config/pipewire/pipewire.conf.d/99-mic-denoise.conf
 ~/.config/containers/registries.conf   podman: short names → docker.io
 ~/.local/bin/tmux-sessionizer
+~/.local/bin/charge-limit             battery limit on/off (UPower)
 ```
 
 ### Why `.zshenv` is so small
@@ -331,9 +398,9 @@ A CUDA process (including an idle Jupyter kernel) keeps the GPU awake: close it 
 
 **Max performance:** plug in, `powerprofilesctl set performance` (ASUS performance mode: higher CPU limits, faster fans), Dynamic Boost does the GPU. On battery the firmware caps power regardless.
 
-**Battery** (47.5 Wh design): NVIDIA asleep is the big win. Expect ~4–5 h coding at 144 Hz, ~5.5–6 h at 60 Hz + power-saver. Switch refresh: `kscreen-doctor output.eDP-1.mode.1920x1080@60`. External monitor on battery: use USB-C (AMD), not HDMI (NVIDIA).
+**Battery** (47.5 Wh design): NVIDIA asleep is the big win. Expect ~4–5 h coding at 144 Hz, ~5.5–6 h at 60 Hz + power-saver. Switch refresh: `kscreen-doctor output.eDP-1.mode.1920x1080@60` (KDE), `niri msg output eDP-1 mode 1920x1080@60` (niri). External monitor on battery: use USB-C (AMD), not HDMI (NVIDIA).
 
-**ASUS tools:** not needed. Power modes go through power-profiles-daemon, charge limit through Plasma, keyboard backlight through KDE. `asusctl` (in the Arch repos) is only for hand-tuning power limits (`nv_dynamic_boost`, PPT). If you add it, leave mode switching to power-profiles-daemon.
+**ASUS tools:** not needed. Power modes go through power-profiles-daemon, charge limit through UPower (`charge-limit`), keyboard backlight through the desktop. `asusctl` (in the Arch repos) is only for hand-tuning power limits (`nv_dynamic_boost`, PPT). If you add it, leave mode switching to power-profiles-daemon.
 
 ### `t14-amd`: ThinkPad T14 Gen 1 AMD
 
@@ -344,7 +411,7 @@ A CUDA process (including an idle Jupyter kernel) keeps the GPU awake: close it 
 
 What [`t14-amd.sh`](../.setup/t14-amd.sh) does: `fprintd` (fingerprint), `alsa-utils` (mic LED stuck on), `mem_sleep_default=deep` when the BIOS offers S3, and a warning if the CPU isn't using `amd-pstate`.
 
-No ThinkPad tools needed: `thinkpad_acpi` + power-profiles-daemon + Plasma's charge limit (start and end thresholds, e.g. 75–80%) cover it. Hibernate is skipped: resume is unreliable on this model.
+No ThinkPad tools needed: `thinkpad_acpi` + power-profiles-daemon + UPower's charge limit (start 85%, stop 90%) cover it. Hibernate is skipped: resume is unreliable on this model.
 
 **Only if you hit them:**
 
@@ -398,7 +465,8 @@ Options in use:
 
 1. Pick a hostname, e.g. `newbox`: lowercase, digits and `-`.
 2. Add `~/.setup/newbox.sh` (sourced by `install.sh`; can use `kernel_param` and `say`).
-3. Add a row to the table at the top.
+3. For niri: add `~/.config/niri/hosts/newbox.kdl` (copy `t14-amd.kdl`, fill it in from `niri msg outputs`).
+4. Add a row to the table at the top.
 
 ---
 
@@ -428,7 +496,9 @@ Flatpak cursor wrong? `flatpak --user override --filesystem=xdg-data/icons:ro` (
 | Problem | Check |
 |---|---|
 | `ssh-add -L`: "Could not open a connection" | Is Bitwarden running and unlocked, with Settings > SSH agent on? `echo $SSH_AUTH_SOCK` should be `~/.bitwarden-ssh-agent.sock` (log out and in once after changing environment.d) |
-| `gh`: "token is invalid" | KWallet must be enabled (System Settings > KDE Wallet), then `gh auth login` |
+| `gh`: "token is invalid" | KDE: KWallet must be enabled (System Settings > KDE Wallet). niri: `secret-tool search service gh:github.com`. Then `gh auth login` |
+| niri: bar missing | `systemctl --user status noctalia.service`; `journalctl --user -u noctalia -b` |
+| niri: config error banner | `niri validate`, `noctalia config validate` |
 | Brightness slider does nothing | `ls /sys/class/backlight/`: should show `amdgpu_bl*`; check `acpi_backlight=native` in `/etc/kernel/cmdline` |
 | NVIDIA never sleeps | `runtime_status` (above); `fuser -v /dev/nvidia*`; is `libva-nvidia-driver` back? |
 | Kernel option not applied | `cat /proc/cmdline`; after editing `/etc/kernel/cmdline` run `sudo mkinitcpio -P` (see [Kernel options](#kernel-options)) |

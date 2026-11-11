@@ -26,6 +26,7 @@ fi
 # the slider changes nothing (Arch wiki: Backlight, acpi_backlight=native).
 kernel_param acpi_backlight=native
 
+# niri: the same is one line in ~/.config/niri/hosts/tuf-a15.kdl (render-drm-device).
 # KWin (and Xwayland with it) otherwise renders on the NVIDIA GPU and keeps it
 # awake (~13 W at idle). Arch wiki, KDE: KWIN_DRM_DEVICES, first = render GPU.
 # card0/card1 numbers can swap between boots, so pin names by PCI address:

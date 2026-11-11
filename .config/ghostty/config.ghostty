@@ -51,3 +51,8 @@ keybind = ctrl+alt+arrow_right=unbind
 keybind = ctrl+enter=unbind
 # Kept: Ctrl+Shift+C/V copy/paste, Ctrl+= / Ctrl+- / Ctrl+0 font size,
 # Ctrl+Shift+F search, Ctrl+Shift+, reload.
+
+# ── wallpaper colors (niri + Noctalia) ──
+# Written by Noctalia on every wallpaper change; overrides the theme above.
+# Not tracked; "?" = skip quietly while it doesn't exist (fresh install, KDE only).
+config-file = ?noctalia-colors

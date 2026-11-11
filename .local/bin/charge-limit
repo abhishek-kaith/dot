@@ -1,0 +1,37 @@
+#!/bin/sh
+# charge-limit: stop charging at the limit (default 90%), or charge to 100%.
+#   charge-limit           show the state
+#   charge-limit on|off    limit on / charge to 100%
+#   charge-limit toggle    switch (the bar button in Noctalia runs this)
+# UPower does the work and remembers it across reboots, in any desktop.
+# The limit itself: CHARGE_LIMIT in /etc/udev/hwdb.d/61-battery-local.hwdb,
+# written by ~/.setup/install.sh from charge_limit= (90 unless the machine's
+# script sets another). No password: UPower allows the logged-in user.
+set -eu
+
+dev=$(upower -e | grep -m1 '/battery_BAT') || { echo "no battery" >&2; exit 1; }
+get() { busctl --system get-property org.freedesktop.UPower "$dev" org.freedesktop.UPower.Device "$1" | cut -d' ' -f2; }
+[ "$(get ChargeThresholdSupported)" = true ] || { echo "this battery has no charge limit" >&2; exit 1; }
+
+set_limit() {
+    busctl --system call org.freedesktop.UPower "$dev" org.freedesktop.UPower.Device EnableChargeThreshold b "$1"
+}
+state() {
+    if [ "$(get ChargeThresholdEnabled)" = true ]; then
+        echo "limit on: stops at $(get ChargeEndThreshold)%"
+    else
+        echo "limit off: charges to 100%"
+    fi
+}
+
+case ${1:-} in
+"") state; exit 0 ;;
+on) set_limit true ;;
+off) set_limit false ;;
+toggle) if [ "$(get ChargeThresholdEnabled)" = true ]; then set_limit false; else set_limit true; fi ;;
+*) echo "usage: charge-limit [on|off|toggle]" >&2; exit 1 ;;
+esac
+
+msg=$(state)
+echo "$msg"
+command -v notify-send >/dev/null && notify-send -a Battery -i battery "Battery" "$msg" || true
