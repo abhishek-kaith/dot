@@ -1,4 +1,4 @@
-# Noctalia shell for the niri session only (never in Plasma).
+# Noctalia shell for the niri session only (not in other desktops).
 # Based on the user service in Noctalia's docs ("Noctalia systemd user service");
 # Noctalia 5.4.1 doesn't ship the file yet. Type=simple: 5.4.1's notify support
 # isn't confirmed, so readiness isn't waited for.

@@ -50,7 +50,7 @@ gst-libav gst-plugins-good    # codecs for GStreamer apps
 noise-suppression-for-voice   # mic denoise (~/.config/pipewire/pipewire.conf.d)
 
 # ── system ──
-power-profiles-daemon         # power modes; KDE + GNOME switchers use it
+power-profiles-daemon         # power modes; Noctalia + GNOME switchers use it
 rtkit                         # realtime priority for PipeWire (no audio crackles under load)
 wireless-regdb                # Wi-Fi regulatory database (kernel: "regulatory.db failed")
 fwupd                         # firmware updates: fwupdmgr update
@@ -65,5 +65,5 @@ xdg-desktop-portal-gtk        # GTK apps and Flatpaks: file dialogs, cursor them
 
 # ── fonts ──
 noto-fonts noto-fonts-cjk noto-fonts-emoji
-hunspell-en_us                # English spell check (KDE apps, LibreOffice)
+hunspell-en_us                # English spell check (LibreOffice, GTK apps)
 ttf-jetbrains-mono-nerd       # terminal + editor font (icons included)

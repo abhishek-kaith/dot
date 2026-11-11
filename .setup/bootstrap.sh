@@ -1,9 +1,9 @@
 #!/bin/sh
 # Fresh machine: clone the dotfiles into $HOME as a bare repo, then run install.
-#   sh -c "$(curl -fsSL https://raw.githubusercontent.com/abhishek-kaith/dot/main/.setup/bootstrap.sh)" -- kde
+#   sh -c "$(curl -fsSL https://raw.githubusercontent.com/abhishek-kaith/dot/main/.setup/bootstrap.sh)" -- niri
 set -eu
 
-de=${1:-kde}
+de=${1:-niri}
 repo=https://github.com/abhishek-kaith/dot.git
 git() { command git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" "$@"; }
 

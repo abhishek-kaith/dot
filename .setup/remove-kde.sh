@@ -6,18 +6,16 @@
 # Run it from niri, not Plasma, once niri's login screen (greetd) is enabled:
 # Plasma Login Manager is part of Plasma, so it goes too.
 #
-# Kept: kdeconnect (phone link, works without Plasma), Inter, Papirus, your
-# KDE Connect pairing (~/.config/kdeconnect), and the custom-widths KWin
-# script, which is tracked in the dotfiles (other machines may use KDE).
+# Kept: kdeconnect (phone link, works without Plasma), Inter, Papirus and your
+# KDE Connect pairing (~/.config/kdeconnect). The KDE setup itself lives on in
+# the dotfiles' `kde` branch.
 # KDE settings in $HOME are moved, not deleted, to ~/.kde-backup-<date>
 # (including the KWallet file, a backup of the secrets now in gnome-keyring).
 set -eu
 
 yes=0
 [ "${1:-}" = --yes ] && yes=1
-dir=$(cd "$(dirname "$0")" && pwd)
 say() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
-list() { sed 's/#.*//' "$@" | tr -s ' \t' '\n' | grep -v '^$'; }
 
 case "${XDG_CURRENT_DESKTOP:-}" in
     *KDE*) echo "!! this is a Plasma session: log into niri first" >&2; exit 1 ;;
@@ -32,11 +30,13 @@ if [ "${dm##*/}" != greetd.service ]; then
     exit 1
 fi
 
-# Explicitly installed KDE packages (kde.txt, kde-aur.txt), minus what niri keeps.
+# What the KDE install put there (kde.txt + kde-aur.txt on the `kde` branch),
+# minus kdeconnect, inter-font and papirus-icon-theme, which niri keeps.
 keep="kdeconnect inter-font papirus-icon-theme"
 pkgs=
-for p in $(list "$dir/kde.txt" "$dir/kde-aur.txt") ffmpegthumbs; do
-    case " $keep " in *" $p "*) continue ;; esac
+for p in plasma-meta dolphin ark filelight partitionmanager okular gwenview kcalc kate \
+    ffmpegthumbs kdegraphics-thumbnailers haruna elisa kamoso \
+    darkly-bin bibata-cursor-theme-bin kwin-karousel kwin-effects-geometry-change; do
     pacman -Qq "$p" >/dev/null 2>&1 && pkgs="$pkgs $p"
 done
 
@@ -79,7 +79,7 @@ for f in \
     .local/share/baloo .local/share/dolphin .local/share/elisa .local/share/gwenview \
     .local/share/haruna .local/share/kactivitymanagerd .local/share/kate .local/share/klipper \
     .local/share/knewstuff3 .local/share/kpeoplevcard .local/share/krunnerstaterc \
-    .local/share/kwalletd .local/share/okular .local/share/plasmalogin \
+    .local/share/kwalletd .local/share/kwin .local/share/okular .local/share/plasmalogin \
     .local/share/plasma-systemmonitor .local/share/plasma; do
     [ -e "$HOME/$f" ] && files="$files $f"
 done

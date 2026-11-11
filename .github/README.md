@@ -1,6 +1,6 @@
 # dot
 
-My Arch Linux setup: dotfiles, kept in a **bare git repo** with `$HOME` as the work tree, and one POSIX `sh` script that turns a minimal Arch install into a working laptop for KDE Plasma, GNOME or niri (scrolling tiling, with the Noctalia shell).
+My Arch Linux setup: dotfiles, kept in a **bare git repo** with `$HOME` as the work tree, and one POSIX `sh` script that turns a minimal Arch install into a working laptop: **niri** (scrolling tiling, with the Noctalia shell), or GNOME. The KDE Plasma setup this replaced is kept on the [`kde` branch](https://github.com/abhishek-kaith/dot/tree/kde).
 
 Machines:
 
@@ -46,10 +46,10 @@ Boot the Arch ISO and run `archinstall`:
 Log in on the console, connect to Wi-Fi (`nmtui`), then:
 
 ```sh
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/abhishek-kaith/dot/main/.setup/bootstrap.sh)" -- kde
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/abhishek-kaith/dot/main/.setup/bootstrap.sh)" -- niri
 ```
 
-(`-- gnome` for GNOME, `-- niri` for niri.) That clones this repo into `~/.dotfiles`, checks the files out into `$HOME` (anything in the way is moved to `~/.dotfiles-backup/`), and runs `~/.setup/install.sh`.
+(`-- gnome` for GNOME.) That clones this repo into `~/.dotfiles`, checks the files out into `$HOME` (anything in the way is moved to `~/.dotfiles-backup/`), and runs `~/.setup/install.sh`.
 
 The same thing by hand:
 
@@ -57,7 +57,7 @@ The same thing by hand:
 git clone --bare https://github.com/abhishek-kaith/dot.git ~/.dotfiles
 git --git-dir=$HOME/.dotfiles --work-tree=$HOME checkout
 git --git-dir=$HOME/.dotfiles --work-tree=$HOME config status.showUntrackedFiles no
-~/.setup/install.sh kde
+~/.setup/install.sh niri
 ```
 
 ### 3. Reboot, then once per machine
@@ -69,7 +69,7 @@ git config --file ~/.config/git/local user.email "you@example.com"
 ```
 
 - **Battery limit:** set by `install.sh` (stops at 90%, any desktop). `charge-limit off` before a trip, `charge-limit on` after. See [niri + Noctalia](#niri--noctalia).
-- **Refresh rate / VRR:** KDE: System Settings > Display, Adaptive Sync *Automatic*. niri: `~/.config/niri/hosts/<hostname>.kdl`.
+- **Refresh rate / VRR:** niri: `~/.config/niri/hosts/<hostname>.kdl`. GNOME: Settings > Displays.
 - **Bitwarden:** log in; Settings > *Enable SSH agent*, *Start to tray*, *Close to tray*. Install the Bitwarden extension in Zen and Chromium. See [Passwords, 2FA, SSH](#passwords-2fa-ssh).
 - **Ente Auth:** log in (or choose offline), turn on App lock.
 - **SSH config + public keys** (after Bitwarden is logged in):
@@ -92,14 +92,13 @@ Everything is in plain lists. Edit them, re-run `install.sh`.
 | File | What |
 |---|---|
 | [`common.txt`](../.setup/common.txt) | shell, CLI, apps, drivers, system services, fonts |
-| [`kde.txt`](../.setup/kde.txt) | Plasma + KDE apps |
 | [`gnome.txt`](../.setup/gnome.txt) | GNOME + GNOME apps |
 | [`niri.txt`](../.setup/niri.txt) | niri + Noctalia + GNOME apps (all from the Arch repos) |
 | [`flatpak.txt`](../.setup/flatpak.txt) | Flathub apps (per-user) |
 
 ### Apps
 
-| Use | Pick | KDE | GNOME |
+| Use | Pick | niri | GNOME |
 |---|---|---|---|
 | Terminal | Ghostty (GPU) | ✓ | ✓ |
 | Browser | Zen (Flatpak) + Chromium | ✓ | ✓ |
@@ -111,17 +110,16 @@ Everything is in plain lists. Edit them, re-run `install.sh`.
 | Photo gallery + quick edits | Shotwell (crop, straighten, enhance), Pinta (markup, resize) | ✓ | ✓ |
 | Phone screen on the laptop | scrcpy (Android, USB or Wi-Fi) | ✓ | ✓ |
 | Torrents | qBittorrent | ✓ | ✓ |
-| Files | | Dolphin | Nautilus |
-| Images | | Gwenview | Loupe |
-| PDF | | Okular | Papers |
-| Text editor | | Kate | Text Editor |
-| Video | mpv | Haruna | Celluloid |
-| Music | | Elisa | Amberol |
-| Camera | | Kamoso | Snapshot |
-| Screenshots | | Spectacle | built-in |
-| Phone link | | KDE Connect | GSConnect |
-
-**niri** uses the GNOME column (Showtime for video, KDE Connect for the phone), with Noctalia for the bar, notifications and lock screen.
+| Files | Nautilus | ✓ | ✓ |
+| Images | Loupe | ✓ | ✓ |
+| PDF | Papers | ✓ | ✓ |
+| Text editor | Text Editor | ✓ | ✓ |
+| Video | mpv | Showtime, Celluloid | Celluloid |
+| Music | Amberol | ✓ | ✓ |
+| Camera | Snapshot | ✓ | ✓ |
+| Screenshots | | niri's own | built-in |
+| Bar, notifications, lock | | Noctalia | GNOME Shell |
+| Phone link | | KDE Connect (runs without Plasma) | GSConnect |
 
 The rule: the desktop's own app for files, images, PDFs and screenshots (it matches the theme and uses the GPU); my own pick only where it matters.
 
@@ -136,7 +134,7 @@ Three separate stores, on purpose:
 |---|---|---|
 | Website/app passwords, notes, recovery codes | **Bitwarden** (synced, end-to-end encrypted) | every device, browser autofill |
 | 2FA codes (TOTP) | **Ente Auth** (phone + this laptop) | kept apart from passwords, so a leaked vault is not also a leaked second factor |
-| App secrets: `gh` token, Chromium's keys, Wi-Fi | **KWallet** (KDE) / **gnome-keyring** (GNOME) | the desktop's Secret Service; unlocks with your login |
+| App secrets: `gh` token, Chromium's keys, Wi-Fi | **gnome-keyring** | the desktop's Secret Service; unlocks with your login |
 
 Turn on 2FA for the Bitwarden account itself **with Ente Auth**, never with Bitwarden.
 
@@ -158,7 +156,7 @@ Each host pins its key with `IdentityFile ~/.ssh/keys/<name>.pub` + `IdentitiesO
 
 Bitwarden must be running and unlocked for SSH to work. `install.sh` puts it in autostart; with *Start to tray* it sits in the tray. Each use pops up an approval prompt in Bitwarden.
 
-**Ente Auth backups / moving codes:** with an Ente account codes sync by themselves. Offline mode: Settings > Data > Export (encrypted), send the file with **KDE Connect** (Dolphin > right-click > *Send to device*, or the phone's share menu), import on the other side, delete the file.
+**Ente Auth backups / moving codes:** with an Ente account codes sync by themselves. Offline mode: Settings > Data > Export (encrypted), send the file with **KDE Connect** (`kdeconnect-cli --share <file> -n <phone>`, or the phone's share menu), import on the other side, delete the file.
 
 ### CLI
 
@@ -207,11 +205,10 @@ Rule of thumb: **pacman** for the system and CLI tools the shell needs, **mise**
 - **qBittorrent:** starting config with fixed port `51413`, UPnP on, Web UI off ([`qBittorrent.conf`](../.setup/qBittorrent.conf)); copied only if none exists.
 - **zram:** Arch wiki tuning for in-memory swap (`swappiness=180`, `page-cluster=0`, watermarks).
 - **TRIM through LUKS2:** `cryptsetup --allow-discards --persistent refresh`, stored in the disk header (no kernel option).
-- **Login screen:** Plasma Login Manager (KDE) / GDM (GNOME) / greetd + Noctalia greeter (niri). On KDE an existing SDDM is replaced: its leftover Xorg keeps the NVIDIA GPU awake.
-- **KDE:** KWallet on (app secrets), Ghostty as default terminal, `Meta+Return` opens Ghostty.
+- **Login screen:** greetd + Noctalia greeter (niri) / GDM (GNOME).
 - **Bitwarden** added to autostart (its SSH agent must be running).
 - **GNOME:** `adw-gtk3` theme for GTK3 apps, `Super+Return` opens Ghostty.
-- **niri:** links `~/.config/niri/host.kdl` to this machine's file, checks both configs, enables `noctalia.service`, sets the GTK and Qt (qt6ct) look.
+- **niri:** links `~/.config/niri/host.kdl` to this machine's file, checks both configs, enables `noctalia.service`, sets the GTK and Qt (qt6ct) look, links the dark/light wallpapers.
 - **Shell:** login shell switched to zsh.
 - Then the machine script, `~/.setup/$(hostname).sh`.
 
@@ -245,7 +242,7 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 
 ## niri + Noctalia
 
-[niri](https://github.com/YaLTeR/niri) 26.04 scrolls windows in columns (what Karousel does on KDE); [Noctalia](https://docs.noctalia.dev/noctalia/) 5.4.1 is the shell: bar, launcher, notifications, lock, idle, polkit prompts, wallpaper. Both are in Arch's repos. Configs were checked against those exact versions (`niri validate`, `noctalia config validate`); Noctalia's website documents its development version, so check new options against `noctalia config validate`.
+[niri](https://github.com/YaLTeR/niri) 26.04 scrolls windows in columns; [Noctalia](https://docs.noctalia.dev/noctalia/) 5.4.1 is the shell: bar, launcher, notifications, lock, idle, polkit prompts, wallpaper. Both are in Arch's repos. Configs were checked against those exact versions (`niri validate`, `noctalia config validate`); Noctalia's website documents its development version, so check new options against `noctalia config validate`.
 
 **Files**
 
@@ -259,7 +256,9 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 | `~/.local/state/noctalia/settings.toml` | | changes made in Noctalia's Settings window; win over config.toml. Copy keepers back |
 | `~/.config/ghostty/noctalia-colors` | | terminal colors from the wallpaper (`config-file = ?noctalia-colors`) |
 
-**Colors from the wallpaper:** pick a wallpaper (bar or launcher `/wall`; files in `~/Pictures/Wallpapers`) and Noctalia recolors itself, niri's borders, GTK, Qt (qt6ct), Ghostty and btop. Change the style with `wallpaper_scheme` in `config.toml`.
+**Colors from the wallpaper:** pick a wallpaper (bar or launcher `/wall`) and Noctalia recolors itself, niri's borders, GTK, Qt (qt6ct), Ghostty and btop. Change the style with `wallpaper_scheme` in `config.toml`.
+
+**Dark and light:** the bar's dark/light button (or `noctalia msg theme-mode-toggle`) switches the colors **and the wallpaper**. Each mode has its own folder, `~/Pictures/Wallpapers/Dark` and `Light`, filled with GNOME's matched pairs (`gnome-backgrounds`); add your own images there too. Defaults: Adwaita dark / light. The wallpaper you pick in a mode is remembered for that mode (`~/.local/bin/wallpaper-mode`, run by Noctalia's `theme_mode_changed` hook).
 
 **Keys** (`Mod+Shift+/` shows them all). Shift moves, Ctrl is workspaces, Alt is monitors; arrows work like H/J/K/L.
 
@@ -279,33 +278,32 @@ Only files you `dot add` are tracked (`status.showUntrackedFiles no`), so the re
 | `Print` or `Mod+Shift+S` | screenshot (pick area, window or screen) |
 | `Mod+Q`, `Ctrl+Alt+L`, `Mod+Shift+E` | close, lock, log out |
 
-**Secrets:** gnome-keyring, unlocked at login by the login screen's PAM module (added to greetd's by `install.sh niri`). Moving from KWallet: `~/.setup/kwallet-to-keyring.py` (dry run), then `--write` from Plasma; it rewrites Chromium's, Electron apps' and Flatpak portal entries into the form each app looks up, so you stay logged in. KWallet is left as it was.
+**Secrets:** gnome-keyring, unlocked at login by the login screen's PAM module (added to greetd's by `install.sh niri`).
 
 **Password apps** (Bitwarden, Ente Auth, KeePassXC) are black in screen sharing and automatic screenshots; notifications are hidden from screen sharing.
 
-**Battery limit:** the bar's battery-charging button, or `charge-limit on|off|toggle`. UPower does it and remembers it, so it works the same in KDE.
+**Battery limit:** the bar's battery-charging button, or `charge-limit on|off|toggle`. UPower does it and remembers it across reboots.
 
 **Memory:** apps started from Noctalia run as their own systemd services, apps from niri keys in their own scopes, so systemd-oomd kills only the one using too much.
 
 **First login on a machine:**
 1. `niri msg outputs`: panel name, modes, VRR support. Put them in `hosts/<hostname>.kdl`.
-2. Check: `nvidia-smi` shows no niri process (tuf-a15); `secret-tool search --all` lists the secrets; Chromium is still logged in; `gh auth status`.
+2. Check: `sudo fuser -v /dev/nvidia*` shows no niri (tuf-a15); `secret-tool search --all` lists the secrets; `gh auth status`.
 3. Bitwarden: copy a password, open `Mod+V`. If it is in the history, tell Noctalia to skip it.
 
-### niri: login screen, and leaving KDE
+### niri: login screen
 
-`install.sh niri` sets up **greetd** with **Noctalia's greeter** (`/etc/greetd/config.toml`, original kept as `config.toml.orig`), adds gnome-keyring to `/etc/pam.d/greetd` so the login password unlocks it, and switches the login screen to greetd at the next boot.
-
-Removing KDE from a machine, once niri works there:
-
-```sh
-~/.setup/remove-kde.sh          # dry run: packages, settings files, system files
-~/.setup/remove-kde.sh --yes    # from niri, not Plasma; pacman still asks
-```
-
-It keeps KDE Connect, Inter and Papirus, moves KDE's settings (and the KWallet file) to `~/.kde-backup-<date>` instead of deleting them, and refuses to run inside Plasma or before greetd is the login screen. The KDE option stays in this repo for other machines.
+`install.sh niri` sets up **greetd** with **Noctalia's greeter** (`/etc/greetd/config.toml`, original kept as `config.toml.orig`), adds gnome-keyring to `/etc/pam.d/greetd` so the login password unlocks it, and makes greetd the login screen from the next boot.
 
 If greetd doesn't start: `Ctrl+Alt+F2`, log in, `systemctl status greetd`; `niri-session` starts niri from the console.
+
+### Moving a KDE machine to niri
+
+The KDE setup lives on the `kde` branch. On a machine still running it:
+
+1. From Plasma: `~/.setup/kwallet-to-keyring.py` (dry run), then `--write`. It copies KWallet's secrets into gnome-keyring and rewrites Chromium's, Electron apps' and Flatpak portal entries into the form each app looks up, so you stay logged in.
+2. `~/.setup/install.sh niri`, reboot, log into niri, run the first-login checks above.
+3. From niri: `~/.setup/remove-kde.sh` (dry run), then `--yes`. It removes Plasma and the KDE apps (pacman asks first), keeps KDE Connect, Inter and Papirus, and moves KDE's settings (and the KWallet file) to `~/.kde-backup-<date>`. It refuses to run inside Plasma or before greetd is the login screen.
 
 ---
 
@@ -315,10 +313,9 @@ If greetd doesn't start: `Ctrl+Alt+F2`, log in, `systemctl status greetd`; `niri
 ~/.github/README.md                    this file
 ~/.setup/
   bootstrap.sh                         clone + checkout + install (fresh machine)
-  install.sh                           ./install.sh kde|gnome|niri
-  common.txt kde.txt gnome.txt niri.txt flatpak.txt
-  kwallet-to-keyring.py                one-time copy of KWallet secrets into gnome-keyring
-  remove-kde.sh                        remove Plasma + KDE apps after moving to niri
+  install.sh                           ./install.sh niri|gnome
+  common.txt gnome.txt niri.txt flatpak.txt
+  kwallet-to-keyring.py remove-kde.sh  moving a KDE machine to niri (see above)
   tuf-a15.sh t14-amd.sh                  per-machine fixes (named after the hostname)
 ~/.zshenv                              every zsh: ZDOTDIR, PATH, EDITOR. Silent and tiny
 ~/.config/zsh/.zshrc                   interactive zsh
@@ -326,7 +323,7 @@ If greetd doesn't start: `Ctrl+Alt+F2`, log in, `systemctl status greetd`; `niri
 ~/.config/git/{config,ignore}          git (identity in ~/.config/git/local, untracked)
 ~/.config/tmux/tmux.conf
 ~/.config/nvim/                        Neovim 0.12, vim.pack, lockfile committed
-~/.config/ghostty/                     config.ghostty + Breeze Light theme
+~/.config/ghostty/config.ghostty
 ~/.config/niri/                        config.kdl (shared) + hosts/<hostname>.kdl
 ~/.config/noctalia/                    config.toml + templates/ (wallpaper colors)
 ~/.config/systemd/user/                noctalia.service, niri.service.d/session-env.conf
@@ -336,6 +333,8 @@ If greetd doesn't start: `Ctrl+Alt+F2`, log in, `systemctl status greetd`; `niri
 ~/.config/containers/registries.conf   podman: short names → docker.io
 ~/.local/bin/tmux-sessionizer
 ~/.local/bin/charge-limit             battery limit on/off (UPower)
+~/.local/bin/wallpaper-mode           dark/light wallpaper swap (Noctalia hook)
+~/.local/bin/gpu-mode                 tuf-a15: NVIDIA eco/hybrid, niri HDMI on/off
 ```
 
 ### Why `.zshenv` is so small
@@ -362,7 +361,8 @@ What [`tuf-a15.sh`](../.setup/tuf-a15.sh) does:
 | remove `libva-nvidia-driver` | browsers otherwise decode video on NVIDIA and keep it awake (~12 W idle) |
 | `vulkan-radeon` (common.txt) | without it the only Vulkan device is NVIDIA, so Vulkan apps wake it |
 | `acpi_backlight=native` | kernel picked `nvidia_wmi_ec_backlight` and skipped amdgpu's, so brightness did nothing |
-| udev names + `KWIN_DRM_DEVICES` (AMD first) | KWin and Xwayland otherwise render on NVIDIA and keep it awake (~13 W idle). Written to `~/.config/plasma-workspace/env/gpu.sh`, not tracked (this laptop only) |
+| niri renders on AMD (`render-drm-device` in `hosts/tuf-a15.kdl`) | otherwise it may render on NVIDIA and keep it awake (~13 W idle) |
+| niri leaves NVIDIA alone (`~/.config/niri/nvidia.kdl`, `gpu-mode hdmi off`) | it never holds the GPU, so `gpu-mode eco` works while logged in. Costs HDMI; `gpu-mode hdmi on` + log out and in to use it |
 | enable `nvidia-powerd` | Dynamic Boost on AC: GPU 60 W → up to 95 W (skipped when the GPU is off) |
 
 Already handled by Arch, nothing to do: runtime D3 (GPU powers off when idle), video memory saved on suspend (driver 595+; `nvidia-suspend/resume/hibernate` services correctly stay **disabled**), `nvidia-drm` modeset.
@@ -381,12 +381,13 @@ If it stays `active`, see what holds it: `sudo fuser -v /dev/nvidia* /dev/dri/ca
 ```sh
 gpu-mode            # show: eco or hybrid
 gpu-mode eco        # NVIDIA off: best battery; no prime-run/CUDA/HDMI (USB-C displays still work)
-gpu-mode hybrid     # NVIDIA back: prime-run/CUDA right away, HDMI after next login
+gpu-mode hybrid     # NVIDIA back: prime-run/CUDA right away
+gpu-mode hdmi on    # niri drives HDMI (NVIDIA) from the next login; `off` to undo (default)
 ```
 
 Switches live (no reboot); the firmware remembers the mode across boots.
 
-`gpu-mode eco` first detaches the GPU from its driver. If something still uses it, log out, switch to a console (Ctrl+Alt+F3) and run it there.
+`gpu-mode eco` first detaches the GPU from its driver. If something still uses it (a CUDA job, or niri with `hdmi on`), close it, or log out, switch to a console (Ctrl+Alt+F3) and run it there.
 
 **Using the NVIDIA GPU**
 
@@ -401,9 +402,9 @@ A CUDA process (including an idle Jupyter kernel) keeps the GPU awake: close it 
 
 **Max performance:** plug in, `powerprofilesctl set performance` (ASUS performance mode: higher CPU limits, faster fans), Dynamic Boost does the GPU. On battery the firmware caps power regardless.
 
-**Battery** (47.5 Wh design): NVIDIA asleep is the big win. Expect ~4–5 h coding at 144 Hz, ~5.5–6 h at 60 Hz + power-saver. Switch refresh: `kscreen-doctor output.eDP-1.mode.1920x1080@60` (KDE), `niri msg output eDP-1 mode 1920x1080@60` (niri). External monitor on battery: use USB-C (AMD), not HDMI (NVIDIA).
+**Battery** (47.5 Wh design): NVIDIA asleep is the big win. Expect ~4–5 h coding at 144 Hz, ~5.5–6 h at 60 Hz + power-saver. Switch refresh: `niri msg output eDP-1 mode 1920x1080@60`. External monitor on battery: use USB-C (AMD), not HDMI (NVIDIA).
 
-**ASUS tools:** not needed. Power modes go through power-profiles-daemon, charge limit through UPower (`charge-limit`), keyboard backlight through the desktop. `asusctl` (in the Arch repos) is only for hand-tuning power limits (`nv_dynamic_boost`, PPT). If you add it, leave mode switching to power-profiles-daemon.
+**ASUS tools:** not needed. Power modes go through power-profiles-daemon, charge limit through UPower (`charge-limit`), keyboard backlight through Noctalia (or the desktop). `asusctl` (in the Arch repos) is only for hand-tuning power limits (`nv_dynamic_boost`, PPT). If you add it, leave mode switching to power-profiles-daemon.
 
 ### `t14-amd`: ThinkPad T14 Gen 1 AMD
 
@@ -475,17 +476,17 @@ Options in use:
 
 ## Theming
 
-Use **Breeze** on KDE and **Adwaita** on GNOME. No extra themes; dark mode reaches apps through the desktop portal.
+**niri:** colors come from the wallpaper through Noctalia (see [niri + Noctalia](#niri--noctalia)): GTK via `adw-gtk3` + Noctalia's `gtk.css`, Qt via `qt6ct` + Noctalia's color file, icons Papirus-Dark, font Inter, cursor Adwaita. **GNOME:** plain Adwaita. Dark mode reaches apps through the desktop portal.
 
-Terminal font: **JetBrainsMono Nerd Font** (icons included). Ghostty switches Breeze Light / Breeze with the desktop, and nvim picks tokyonight *day* or *night* from the terminal background at start.
+Terminal font: **JetBrainsMono Nerd Font** (icons included). Ghostty takes the wallpaper colors on niri (Adwaita / Adwaita Dark otherwise), and nvim picks tokyonight *day* or *night* from the terminal background at start.
 
-| App type | KDE | GNOME |
+| App type | niri | GNOME |
 |---|---|---|
-| Qt | native Breeze | follows dark mode via the portal |
-| GTK 4 | Breeze colours (`breeze-gtk`, in `plasma-meta`) | native Adwaita |
-| GTK 3 | `breeze-gtk` | `adw-gtk3` (set by `install.sh`) |
-| Flatpak GTK | `org.gtk.Gtk3theme.Breeze` (installed) | `org.gtk.Gtk3theme.adw-gtk3{,-dark}` (installed) |
-| Flatpak Qt/KDE | follows the portal | follows the portal |
+| Qt | `qt6ct` (`QT_QPA_PLATFORMTHEME`, set for the niri session only) | follows dark mode via the portal |
+| GTK 4 | Adwaita + Noctalia colors | native Adwaita |
+| GTK 3 | `adw-gtk3` + Noctalia colors | `adw-gtk3` (set by `install.sh`) |
+| Flatpak GTK | `org.gtk.Gtk3theme.adw-gtk3{,-dark}` (installed) | same |
+| Flatpak Qt | follows the portal | follows the portal |
 | Electron | Wayland by default since Electron 38.2; dark mode via portal. Old apps: `--ozone-platform=wayland` in `~/.config/<app>-flags.conf` | same; add `--enable-features=WaylandWindowDecorations` if the title bar is missing |
 | Chromium / Brave | flags in `~/.config/chromium-flags.conf` / `brave-flags.conf` | same |
 | AppImage | bundles its own toolkit; theming varies. `fuse2` runs them, Gear Lever adds them to the menu | same |
@@ -499,15 +500,15 @@ Flatpak cursor wrong? `flatpak --user override --filesystem=xdg-data/icons:ro` (
 | Problem | Check |
 |---|---|
 | `ssh-add -L`: "Could not open a connection" | Is Bitwarden running and unlocked, with Settings > SSH agent on? `echo $SSH_AUTH_SOCK` should be `~/.bitwarden-ssh-agent.sock` (log out and in once after changing environment.d) |
-| `gh`: "token is invalid" | KDE: KWallet must be enabled (System Settings > KDE Wallet). niri: `secret-tool search service gh:github.com`. Then `gh auth login` |
+| `gh`: "token is invalid" | `secret-tool search service gh:github.com` (is gnome-keyring unlocked?), then `gh auth login` |
 | niri: bar missing | `systemctl --user status noctalia.service`; `journalctl --user -u noctalia -b` |
 | niri: config error banner | `niri validate`, `noctalia config validate` |
 | Brightness slider does nothing | `ls /sys/class/backlight/`: should show `amdgpu_bl*`; check `acpi_backlight=native` in `/etc/kernel/cmdline` |
-| NVIDIA never sleeps | `runtime_status` (above); `fuser -v /dev/nvidia*`; is `libva-nvidia-driver` back? |
+| NVIDIA never sleeps | `runtime_status` (above); `fuser -v /dev/nvidia*`; is `libva-nvidia-driver` back? In hybrid it is the firmware bug: use `gpu-mode eco` |
 | Kernel option not applied | `cat /proc/cmdline`; after editing `/etc/kernel/cmdline` run `sudo mkinitcpio -P` (see [Kernel options](#kernel-options)) |
 | `docker`/compose: "Cannot connect" | `systemctl --user status podman.socket`; `echo $DOCKER_HOST` (log out and in once) |
 | TRIM | `lsblk -D`: `DISC-GRAN` must not be `0B` on the `root` mapper |
 | zsh slow to start | `time zsh -i -c exit` (aim < 100 ms) |
 | Broken update | boot the live USB, `arch-chroot`, downgrade from `/var/cache/pacman/pkg` with `pacman -U` |
 
-Sources used for the machine notes: Arch wiki pages *NVIDIA/Tips and tricks*, *PRIME*, *Backlight*, *Zram*, *dm-crypt/Specialties*, *Lenovo ThinkPad T14 (AMD) Gen 1*, *KDE* (KDE Connect), *Wayland* (Electron), *Flatpak*, *Power management*.
+Sources used for the machine notes: Arch wiki pages *NVIDIA/Tips and tricks*, *PRIME*, *Backlight*, *Zram*, *dm-crypt/Specialties*, *Lenovo ThinkPad T14 (AMD) Gen 1*, *KDE Connect*, *Wayland* (Electron), *Flatpak*, *Power management*.

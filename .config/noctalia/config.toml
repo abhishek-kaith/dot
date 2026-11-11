@@ -36,9 +36,21 @@ input_path = "templates/ghostty-colors"
 output_path = "~/.config/ghostty/noctalia-colors"   # read via `config-file = ?noctalia-colors`
 post_hook = "bash /usr/share/noctalia/assets/templates/ghostty/reload.sh"
 
+# Dark and light wallpapers: GNOME's matched pairs (gnome-backgrounds), linked
+# into these folders by install.sh niri. Switching dark/light (bar button, or
+# `noctalia msg theme-mode-toggle`) swaps the wallpaper too, through the hook
+# below; the one you pick in each mode is remembered (~/.local/bin/wallpaper-mode).
 [wallpaper]
 directory = "~/Pictures/Wallpapers"
+directory_dark = "~/Pictures/Wallpapers/Dark"
+directory_light = "~/Pictures/Wallpapers/Light"
 fill_mode = "crop"
+
+[wallpaper.default]
+path = "~/Pictures/Wallpapers/Dark/adwaita-d.jxl"
+
+[hooks]
+theme_mode_changed = "wallpaper-mode"
 
 # ── Bar: thin, flat, full width along the top edge ──────────────────────────
 
@@ -54,7 +66,7 @@ compositor_blur = false
 capsule = false
 start = ["launcher", "workspaces", "active_window"]
 center = ["clock"]
-end = ["media", "tray", "notifications", "clipboard", "power_profile", "charge-limit", "network", "bluetooth", "volume", "brightness", "battery", "control-center", "session"]
+end = ["media", "tray", "notifications", "clipboard", "theme_mode", "power_profile", "charge-limit", "network", "bluetooth", "volume", "brightness", "battery", "control-center", "session"]
 
 # Click: stop charging at 90% <-> charge to 100% (UPower; ~/.local/bin/charge-limit).
 [widget.charge-limit]

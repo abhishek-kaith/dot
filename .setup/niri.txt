@@ -19,6 +19,7 @@ adw-gtk-theme                 # GTK3 apps match libadwaita
 qt6ct                         # Qt apps: colors, font, icons
 inter-font                    # UI font
 papirus-icon-theme            # icons: Papirus-Dark
+gnome-backgrounds             # wallpapers: matched dark/light pairs
 
 # GNOME apps
 nautilus sushi file-roller gvfs-mtp gvfs-smb

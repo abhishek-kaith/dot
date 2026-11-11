@@ -5,9 +5,9 @@
 # ── look ──
 font-family = JetBrainsMono Nerd Font
 font-size = 11
-# Follows the desktop's light/dark setting live (KDE and GNOME, via the portal).
-# "Breeze Light" is in ./themes/; "Breeze" ships with Ghostty.
-theme = light:Breeze Light,dark:Breeze
+# Follows the desktop's light/dark setting live (via the portal). Both ship
+# with Ghostty; on niri the wallpaper colors below replace them.
+theme = light:Adwaita,dark:Adwaita Dark
 background-opacity = 0.85
 background-blur = true
 window-padding-x = 6
@@ -54,5 +54,5 @@ keybind = ctrl+enter=unbind
 
 # ── wallpaper colors (niri + Noctalia) ──
 # Written by Noctalia on every wallpaper change; overrides the theme above.
-# Not tracked; "?" = skip quietly while it doesn't exist (fresh install, KDE only).
+# Not tracked; "?" = skip quietly while it doesn't exist (fresh install, GNOME).
 config-file = ?noctalia-colors
