@@ -56,7 +56,7 @@ Plain lists in `~/.setup/`: [`common.txt`](../.setup/common.txt) (shell, CLI, ap
 - Services: bluetooth, cups, fstrim/paccache/reflector timers, `podman.socket` (user).
 - ufw: deny incoming; open 1714–1764 (KDE Connect) and 51413 (qBittorrent, whose starting config is [`qBittorrent.conf`](../.setup/qBittorrent.conf)).
 - Bitwarden in autostart (its SSH agent), zsh as login shell, then `~/.setup/<hostname>.sh`.
-- niri: greetd + Noctalia's greeter with **autologin**, keyring unlock in its PAM file, `noctalia.service`, GTK/Qt look, default apps, wallpapers.
+- niri: greetd + Noctalia's greeter with **autologin**, keyring unlock in its PAM file, passwordless login-screen sync, `noctalia.service`, GTK/Qt look, default apps, wallpapers.
 
 **Containers:** rootless Podman; `podman-docker` + `podman.socket` + `DOCKER_HOST` make `docker`, `docker-compose`, lazydocker and testcontainers work unchanged.
 

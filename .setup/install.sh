@@ -132,6 +132,9 @@ user = \"$USER\""
         printf 'password   optional     pam_gnome_keyring.so\n' | sudo tee -a "$pam" >/dev/null
     sudo systemd-tmpfiles --create noctalia-greeter.conf
     sudo noctalia-greeter-apply-appearance --setup-system
+    # Let Noctalia sync its look to the login screen without a password prompt
+    # (a narrow polkit rule for that one helper; the greeter's own command).
+    sudo noctalia-greeter passwordless-sync enable "$USER"
 fi
 
 # Enable the login screen on a fresh install; niri swaps any other for greetd.
