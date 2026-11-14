@@ -102,7 +102,7 @@ sudo systemctl enable --now bluetooth.service cups.socket fstrim.timer paccache.
 
 # niri's login screen: greetd + Noctalia's greeter, keyring unlock in its PAM.
 if [ "$de" = niri ]; then
-    # Autologin once per boot (the keyring then asks once). Off: autologin=no
+    # Password login (it also unlocks the keyring). Autologin: autologin=yes
     cmd=/usr/bin/noctalia-greeter-session
     want="# Written by ~/.setup/install.sh niri (original: config.toml.orig).
 [terminal]
@@ -111,7 +111,7 @@ vt = 1
 [default_session]
 command = \"$cmd\"
 user = \"greeter\""
-    if [ "${autologin:-yes}" = yes ]; then
+    if [ "${autologin:-no}" = yes ]; then
         want="$want
 
 [initial_session]
@@ -121,7 +121,7 @@ user = \"$USER\""
     if [ "$(cat /etc/greetd/config.toml 2>/dev/null)" != "$want" ]; then
         [ -f /etc/greetd/config.toml.orig ] || sudo cp /etc/greetd/config.toml /etc/greetd/config.toml.orig
         printf '%s\n' "$want" | sudo tee /etc/greetd/config.toml >/dev/null
-        echo "  greetd: autologin ${autologin:-yes}"
+        echo "  greetd: autologin ${autologin:-no}"
     fi
     pam=/etc/pam.d/greetd
     grep -q '^auth.*pam_gnome_keyring' "$pam" ||
@@ -132,6 +132,15 @@ user = \"$USER\""
         printf 'password   optional     pam_gnome_keyring.so\n' | sudo tee -a "$pam" >/dev/null
     sudo systemd-tmpfiles --create noctalia-greeter.conf
     sudo noctalia-greeter-apply-appearance --setup-system
+    # Minimal login screen: this user and niri preselected, so only the
+    # password box, clock and power buttons show. Colors still sync from Noctalia.
+    printf '%s\n' "# Written by ~/.setup/install.sh niri: a minimal login screen." \
+        "# Wallpaper and colors still come from Noctalia (sync.toml)." "" \
+        '[session]' 'default = "Niri"' "" '[user]' "default = \"$USER\"" "" \
+        '[appearance]' 'hide_logo = true' 'scheme_selector_position = "hidden"' \
+        'power_buttons_position = "bottom-right"' "" \
+        '[clock]' 'enabled = true' 'position = "above-panel"' |
+        sudo install -m 644 -o greeter -g greeter /dev/stdin /var/lib/noctalia-greeter/greeter.toml
     # Let Noctalia sync its look to the login screen without a password prompt
     # (a narrow polkit rule for that one helper; the greeter's own command).
     sudo noctalia-greeter passwordless-sync enable "$USER"
